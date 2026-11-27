@@ -307,6 +307,17 @@ input:focus{outline:none;border-color:var(--brand2)}
 .tag{font-size:11px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:3px 10px;color:var(--mute)}
 </style></head><body><div class="app" id="app"></div><div class="toast" id="t"></div>
 <script>
+let sheet=null;const D=s=>(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).trim();function go(v){view=v=='mlogin'?'login':v;R();window.scrollTo(0,0)}
+function frontHTML(){const n=G.members.length,per=G.period||'monthly',isO=(typeof org!=='undefined'&&org),cur=G.members[0],nx=G.members[1]||G.members[0],af=G.members[2]||G.members[0];
+const paid=1,pill=(a,b)=>`<span class="fpill">${a} <b>${b}</b></span>`;
+const sh=!sheet?'':`<div class="ov" onclick="if(event.target==this){sheet=null;R()}"><div class="sh"><div class="shh"><b>${sheet=='chg'?'تغيير الباسورد':'الإعدادات'}</b><button class="xb" onclick="sheet=null;R()">✕</button></div><div class="shb">`+(sheet=='chg'?`<label style="margin-top:0">الباسورد الحالي</label><input id="o" type="password" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\D/g,'')" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\\D/g,'')"><label>باسورد جديد (أرقام بس، ٤ على الأقل)</label><input id="n1" type="password" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\D/g,'')" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\\D/g,'')"><label>تأكيد الباسورد</label><input id="n2" type="password" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\D/g,'')" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\\D/g,'')"><div class="err" id="e"></div><button class="btn" onclick="setpw('chg')">حفظ</button><button class="btn ghost" onclick="sheet='set';R()">رجوع</button>`:`<div class="row"><span>🔑 تغيير الباسورد</span><button class="tag" onclick="sheet='chg';R()">تغيير</button></div><div class="row"><span>🔔 تذكيرات واتساب</span><span class="tag">قريباً</span></div><div class="row"><span>${isO?'↩️ رجوع لشاشة المنظم':'🚪 تسجيل الخروج'}</span><button class="tag" onclick="sheet=null;${isO?"go('org')":"me=null;go('mlogin')"}">${isO?'رجوع':'خروج'}</button></div>`)+`</div></div></div>`;
+return `<style>.fh{background:linear-gradient(160deg,#0B5D4B,#13A58A);margin:-18px -16px 0;padding:18px 16px 20px;border-radius:0 0 28px 28px;color:#fff}.fh .ic{display:flex;gap:8px;margin-bottom:6px}.fh .ib{width:42px;height:42px;border-radius:14px;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:20px}.fh h1{margin:2px 0 10px;font-size:28px}.fpill{display:inline-block;background:rgba(255,255,255,.16);border-radius:99px;padding:6px 12px;font-size:12px;margin:0 0 6px 6px}.chips{display:flex;gap:8px;margin-top:8px}.chip{padding:8px 16px;border-radius:99px;background:rgba(255,255,255,.18);font-size:13px;font-weight:700}.chip.on{background:#fff;color:var(--brand)}.cur{background:linear-gradient(135deg,#FFF3C9,#F7DE8C);border-radius:20px;padding:16px;margin:-6px 0 12px;box-shadow:var(--sh);color:#4a3600}.cur .nm{font-size:26px;font-weight:900;color:#10231D}.two2{display:flex;gap:10px;margin-bottom:12px}.two2>div{flex:1;background:#fff;border-radius:18px;padding:14px;box-shadow:var(--sh)}.two2 small{color:var(--mute);font-size:11px}.two2 b{display:block;font-size:20px;margin-top:4px}.prog{height:9px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:10px}.prog i{display:block;height:100%;background:var(--brand2);width:${Math.round(paid/n*100)}%}.ov{position:fixed;inset:0;background:rgba(16,35,29,.45);display:flex;align-items:flex-end;justify-content:center;z-index:5}.sh{background:#fff;width:100%;max-width:440px;border-radius:24px 24px 0 0;max-height:85vh;display:flex;flex-direction:column}.shh{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);font-size:17px}.xb{border:0;background:var(--bg);width:34px;height:34px;border-radius:50%;font-size:15px}.shb{padding:6px 20px 24px;overflow:auto}</style>
+<div class="fh"><div class="ic"><button class="ib" onclick="sheet='set';R()" aria-label="settings">⚙️</button><button class="ib" onclick="toast('مشاركة (للتجربة)')">⬆️</button></div><div style="font-size:12px;opacity:.85">مرحباً ${me.n} 👋</div><h1>${G.name}</h1>${pill(per=='monthly'?'القسط الشهري:':'القسط الأسبوعي:',G.amount+' ج.م')}${pill('الإجمالي:',G.amount*n+' ج.م')}${pill('الأعضاء:',n)}<div class="chips"><span class="chip on">${G.name}</span><span class="chip" style="border:1px dashed rgba(255,255,255,.6);background:none" onclick="toast('جمعية جديدة (للتجربة)')">+ جمعية جديدة</span></div></div>
+<div style="height:14px"></div><div class="cur"><small>🏆 قبض ${per=='monthly'?'الشهر':'الأسبوع'} الحالي</small><div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:6px"><span class="nm">${cur.n}</span><span style="font-size:13px">${G.amount*n} ج.م</span></div></div>
+<div class="two2"><div><small>قبض القادم</small><b>${nx.n}</b></div><div><small>اللي بعده</small><b>${af.n}</b></div></div>
+<div class="card"><div class="row" style="border:0;padding:0"><b>التحصيل الحالي</b><span style="font-size:13px">دفع ${paid} من ${n}</span></div><div class="prog"><i></i></div></div>
+<div class="card"><h2>الأعضاء</h2>${G.members.map((m,i)=>`<div class="row"><span>${m.n}${m===me?' <span class="tag">أنت</span>':''}</span><span class="pill ${i==0?'ok':'wait'}">${i==0?'دفع':'لسه'}</span></div>`).join('')}</div>${sh}`}
+
 const G={name:'شلة الشغل',amount:1000,members:[
 {n:'أحمد',p:'01012345678',pw:null,turn:1,paid:true},
 {n:'منى',p:'01123456789',pw:null,turn:2,paid:true},
@@ -319,27 +330,20 @@ function brand(){return '<div style="text-align:center;margin:14px 0 18px"><div 
 function R(){
  if(view=='login')A.innerHTML=brand()+`<div class="card"><h2>تسجيل الدخول</h2><p>اكتب اسم الجمعية والباسورد بتاعك.</p>
  <label>اسم الجمعية</label><input id="g" style="direction:rtl" placeholder="اسم الجمعية">
- <label>الباسورد</label><input id="pw" type="password" inputmode="numeric" placeholder="الباسورد (أول مرة: رقم موبايلك)">
+ <label>الباسورد</label><input id="pw" type="password" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\D/g,'')" inputmode="numeric" placeholder="الباسورد (أول مرة: رقم موبايلك)">
  <div class="err" id="e"></div><button class="btn" onclick="login()">دخول</button></div>
  <div class="demo">🧪 <b>للتجربة:</b><br>اسم الجمعية: <b>شلة الشغل</b><br>الباسورد (رقم الموبايل): <b>01012345678</b> (أحمد) أو <b>01123456789</b> (منى) أو <b>01234567890</b> (كريم)</div>`;
  if(view=='first')A.innerHTML=brand()+`<div class="card"><h2>أهلاً ${me.n} 👋</h2><p>باسوردك دلوقتي هو رقم موبايلك، وده سهل يتخمن. تحب تغيره دلوقتي؟ (ممكن تتخطى وتغيره بعدين من القائمة)</p>
- <label>باسورد جديد</label><input id="n1" type="password" placeholder="٤ حروف أو أرقام على الأقل">
- <label>تأكيد الباسورد</label><input id="n2" type="password">
+ <label>باسورد جديد</label><input id="n1" type="password" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\D/g,'')" placeholder="أرقام بس، ٤ على الأقل">
+ <label>تأكيد الباسورد</label><input id="n2" type="password" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\D/g,'')">
  <div class="err" id="e"></div><button class="btn" onclick="setpw('first')">حفظ الباسورد الجديد</button>
  <button class="btn ghost" onclick="view='home';R()">ليس الآن</button></div>`;
  if(view=='chg')A.innerHTML=`<div class="top" style="margin-bottom:12px"><h2 style="margin:0">تغيير الباسورد</h2><button class="tag" onclick="view='home';R()">رجوع</button></div><div class="card">
- <label>الباسورد الحالي</label><input id="o" type="password">
- <label>باسورد جديد</label><input id="n1" type="password" placeholder="٤ حروف أو أرقام على الأقل">
- <label>تأكيد الباسورد</label><input id="n2" type="password">
+ <label>الباسورد الحالي</label><input id="o" type="password" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\D/g,'')">
+ <label>باسورد جديد</label><input id="n1" type="password" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\D/g,'')" placeholder="أرقام بس، ٤ على الأقل">
+ <label>تأكيد الباسورد</label><input id="n2" type="password" inputmode="numeric" pattern="[0-9]*" oninput="this.value=D(this.value).replace(/\D/g,'')">
  <div class="err" id="e"></div><button class="btn" onclick="setpw('chg')">تغيير</button></div>`;
- if(view=='home'){const my=me.turn,paidN=G.members.filter(m=>m.paid).length;
- A.innerHTML=`<div class="top" style="margin:6px 0 14px"><div><div style="font-size:12px;color:var(--mute)">أهلاً ${me.n}</div><h1 style="margin:0;font-size:22px">${G.name}</h1></div><span class="tag">عرض عضو</span></div>
- <div class="tile"><small>الدفعة الجاية</small><div class="n">بعد ٥ أيام</div><small>${G.amount} ج لكل عضو</small></div>
- <div class="tile" style="background:linear-gradient(135deg,#8a5a00,${'#E9A23B'})"><small>دورك في القبض</small><div class="n">بعد ${my*30-20} يوم</div><small>الدور رقم ${my} من ${G.members.length}</small></div>
- <div class="card"><h2>الأعضاء (${paidN}/${G.members.length} دفعوا)</h2>${G.members.map(m=>`<div class="row"><span>${m.n}${m===me?' <span class="tag">أنت</span>':''}</span><span class="pill ${m.paid?'ok':'wait'}">${m.paid?'دفع':'لسه'}</span></div>`).join('')}</div>
- <div class="card"><div class="row"><span>🔑 تغيير الباسورد</span><button class="tag" onclick="view='chg';R()">تغيير</button></div>
- <div class="row"><span>🚪 تسجيل الخروج</span><button class="tag" onclick="me=null;view='login';R()">خروج</button></div></div>
- <p style="text-align:center;font-size:12px">هذه تجربة. أي تغيير بيتمسح لما تقفل الصفحة.</p>`}
+ if(view=='home')A.innerHTML=frontHTML();
 }
 function login(){const g=norm(document.getElementById('g').value),pw=document.getElementById('pw').value.trim().replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
  const m=g===G.name&&G.members.find(x=>x.pw===pw);
@@ -347,10 +351,10 @@ function login(){const g=norm(document.getElementById('g').value),pw=document.ge
  me=m;view=m.pw===m.p?'first':'home';R()}
 function setpw(k){const e=document.getElementById('e'),n1=document.getElementById('n1').value,n2=document.getElementById('n2').value;
  if(k=='chg'&&document.getElementById('o').value!==me.pw){e.textContent='الباسورد الحالي غلط';return}
- if(n1.length<4){e.textContent='الباسورد قصير (٤ على الأقل)';return}
+ if(!/^[0-9]{4,}$/.test(n1)){e.textContent='أرقام بس، ٤ أرقام على الأقل';return}
  if(n1===me.p){e.textContent='ما ينفعش يبقى رقم موبايلك';return}
  if(G.members.some(x=>x!==me&&x.pw===n1)){e.textContent='الباسورد ده مستخدم، اختار غيره';return}
  if(n1!==n2){e.textContent='التأكيد مش زي الباسورد';return}
- me.pw=n1;toast('تم تغيير الباسورد ✅');view='home';R()}
+ me.pw=n1;sheet=null;toast('تم تغيير الباسورد ✅');view='home';R()}
 R();
 </script></body></html>
