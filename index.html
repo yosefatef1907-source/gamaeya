@@ -315,7 +315,7 @@ button:disabled{opacity:.5;cursor:default}
 .hero:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.05);bottom:-80px;right:-40px}
 .hrow{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;z-index:1}
 .hero h1{margin:0;font-size:26px;font-weight:900;line-height:1.3;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.hsub{position:relative;z-index:1;margin-top:6px;font-size:14px;opacity:.9;display:flex;gap:14px;flex-wrap:wrap}
+.hsub{position:relative;z-index:1;margin-top:8px;font-size:13px;opacity:.92;display:flex;gap:8px;flex-wrap:wrap}.hsub span{background:rgba(255,255,255,.14);padding:4px 10px;border-radius:999px;white-space:nowrap}
 .hsub b{font-weight:800}
 .ibtn{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.16);color:#fff;display:grid;place-items:center;flex:none}
 .ic{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -363,9 +363,9 @@ button:disabled{opacity:.5;cursor:default}
 .empty b{display:block;font-size:34px;margin-bottom:6px}
 .foot{margin:22px 14px 0;text-align:center;font-size:12px;color:var(--mute);line-height:1.8}
 .strip{background:var(--warnbg);color:#8A5A0A;text-align:center;font-size:12.5px;font-weight:700;padding:6px 10px}
-.swr{display:flex;gap:8px;overflow-x:auto;padding:12px 14px 0;-webkit-overflow-scrolling:touch}
-.swc{flex:none;height:38px;padding:0 14px;border-radius:19px;background:#E8EFEB;color:var(--mute);font-weight:800;font-size:13px;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis}
-.swc.on{background:var(--brand);color:#fff}.swc.add{background:#fff;color:var(--brand);border:1.5px dashed var(--brand2)}
+.swr{display:flex;gap:8px;overflow-x:auto;padding:6px 0 6px;margin:-110px 14px 60px;position:relative;z-index:3;-webkit-overflow-scrolling:touch;scrollbar-width:none}.swr::-webkit-scrollbar{display:none}
+.swc{flex:none;height:38px;padding:0 14px;border-radius:19px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.25);font-weight:800;font-size:13px;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.swc.on{background:#fff;color:var(--brand)}.swc.add{background:transparent;color:#fff;border:1.5px dashed rgba(255,255,255,.7)}
 /* sheets */
 html.slock,html.slock body{overflow:hidden}
 .sheet.sx{display:flex;flex-direction:column;padding:0;overflow:hidden;max-height:90vh;max-height:90dvh}
@@ -413,6 +413,7 @@ html.slock,html.slock body{overflow:hidden}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + var(--sab));background:#10231D;color:#fff;padding:11px 18px;border-radius:14px;font-weight:700;font-size:14px;z-index:80;max-width:90%;text-align:center;animation:f .2s}
 .wel{padding:calc(60px + var(--sat)) 22px 30px;text-align:center}
 .wel .logo{width:92px;height:92px;border-radius:28px;background:linear-gradient(155deg,#0A4F40,#13A58A);margin:0 auto 18px;display:grid;place-items:center;font-size:46px;box-shadow:var(--sh)}
+.feat{display:flex;gap:12px;align-items:center;text-align:right;background:#fff;border-radius:18px;padding:12px 14px;margin:10px 0;box-shadow:var(--sh)}.feat i{font-style:normal;font-size:24px;width:44px;height:44px;border-radius:14px;background:var(--okbg);display:grid;place-items:center;flex:none}.feat b{display:block;font-size:14.5px}.feat span{font-size:12.5px;color:var(--mute);line-height:1.6}
 .wel h1{margin:0 0 8px;font-size:30px;font-weight:900}
 .wel p{color:var(--mute);line-height:1.9;margin:0 0 20px;font-size:15px}
 .spin{width:34px;height:34px;border:4px solid #D6E3DD;border-top-color:var(--brand);border-radius:50%;margin:40vh auto 0;animation:r .8s linear infinite}
@@ -585,7 +586,7 @@ function switcherHtml(curName){
 }
 function showWelcome(msg){
  S.code=null;
- $app.innerHTML=(DEMO?'<div class="strip">نسخة تجريبية: البيانات على جهازك بس</div>':'')+'<div class="wel"><div class="logo">🤝</div><h1>الجمعية</h1><p>مساحة مشتركة للصحاب: كل واحد يأكد دفعه ويرفع إثبات التحويل، والكل يشوف مين دفع ومين هيقبض.<br><small>التطبيق بيتابع الدفع بس، ومبيحوّلش فلوس.</small></p>'+(msg?'<div class="err" style="margin-bottom:14px">'+esc(msg)+'</div>':'')+'<button class="btn" id="new">ابدأ جمعية جديدة</button><p style="margin-top:18px;font-size:13px">لو صاحبك بعتلك رابط جمعية، افتحه من هنا.</p></div>';
+ $app.innerHTML=(DEMO?'<div class="strip">نسخة تجريبية: البيانات على جهازك بس</div>':'')+'<div class="wel"><div class="logo">🤝</div><h1>الجمعية</h1><p style="margin-bottom:12px">مساحة مشتركة للصحاب لمتابعة الجمعية بسهولة.</p><div class="feat"><i>✅</i><div><b>كل واحد يأكد دفعه</b><span>ويرفع إثبات التحويل بضغطة</span></div></div><div class="feat"><i>👀</i><div><b>الكل يشوف مين دفع ومين هيقبض</b><span>شفافية كاملة بين الأعضاء</span></div></div><div class="feat"><i>🔒</i><div><b>مبيحوّلش فلوس</b><span>التطبيق بيتابع الدفع بس</span></div></div><div style="height:8px"></div>'+(msg?'<div class="err" style="margin-bottom:14px">'+esc(msg)+'</div>':'')+'<button class="btn" id="new">ابدأ جمعية جديدة</button><p style="margin-top:18px;font-size:13px">لو صاحبك بعتلك رابط جمعية، افتحه من هنا.</p></div>';
  document.getElementById('new').onclick=function(){openSetup(false)};
 }
 
@@ -764,7 +765,7 @@ function render(){
  var c0=collectorAt(ci),c1=collectorAt(ci+1),c2=collectorAt(ci+2);
  var meM=S.me&&d.members.filter(function(m){return m.id===S.me})[0];
  var h=(DEMO?'<div class="strip">نسخة تجريبية: البيانات على جهازك بس</div>':'');
- h+='<div class="hero"><div class="hrow"><div style="min-width:0"><div style="font-size:13px;opacity:.85">'+(meM?'أهلاً '+esc(meM.name)+' 👋':'مرحباً 👋')+'</div><h1>'+esc(d.circle.name)+'</h1></div><div style="display:flex;gap:8px"><button class="ibtn" id="bShare" aria-label="مشاركة">'+IC.share+'</button>'+(isAdmin()?'<button class="ibtn" id="bSet" aria-label="إعدادات">'+IC.gear+'</button>':'')+'</div></div>'+
+ h+='<div class="hero" style="padding-bottom:118px"><div class="hrow"><div style="min-width:0"><div style="font-size:13px;opacity:.85">'+(meM?'أهلاً '+esc(meM.name)+' 👋':'مرحباً 👋')+'</div><h1>'+esc(d.circle.name)+'</h1></div><div style="display:flex;gap:8px"><button class="ibtn" id="bShare" aria-label="مشاركة">'+IC.share+'</button>'+(isAdmin()?'<button class="ibtn" id="bSet" aria-label="إعدادات">'+IC.gear+'</button>':'')+'</div></div>'+
   '<div class="hsub"><span>'+W().inst+': <b class="num">'+fmt(amt)+'</b> ج.م</span><span>الإجمالي: <b class="num">'+fmt(total)+'</b> ج.م</span><span>الأعضاء: <b class="num">'+n+'</b></span></div></div>';
  h+=switcherHtml(d.circle.name);
  h+='<div class="cards">';
