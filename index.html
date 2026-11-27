@@ -366,6 +366,17 @@ button:disabled{opacity:.5;cursor:default}
 .swr{display:flex;gap:8px;overflow-x:auto;padding:6px 0 6px;margin:-110px 14px 60px;position:relative;z-index:3;-webkit-overflow-scrolling:touch;scrollbar-width:none}.swr::-webkit-scrollbar{display:none}
 .swc{flex:none;height:38px;padding:0 14px;border-radius:19px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.25);font-weight:800;font-size:13px;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis}
 .swc.on{background:#fff;color:var(--brand)}.swc.add{background:transparent;color:#fff;border:1.5px dashed rgba(255,255,255,.7)}
+.cd{margin:14px 14px 0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cd .c{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:12px 14px;min-width:0}
+.cd .c.w{grid-column:1/-1}
+.cd .big{font-size:30px;font-weight:900;color:var(--brand);line-height:1.1}.cd .big small{font-size:13px;font-weight:800;color:var(--mute);margin-inline-start:4px}
+.cd .lb{font-size:12.5px;color:var(--mute);font-weight:700;margin-bottom:2px}
+.cd .sub{font-size:12px;color:var(--mute);margin-top:2px}
+.cd .now{color:#8A6A12}
+.cdb{display:flex;gap:8px;margin-top:10px}.cdb button{flex:1;height:40px;border-radius:12px;background:var(--okbg);color:var(--brand);font-weight:800;font-size:13px}
+.rem{margin:12px 14px 0;width:calc(100% - 28px);height:46px;border-radius:14px;background:#E7F7EE;color:#0B6B3A;font-weight:900;font-size:14px;border:1.5px solid #BFE6CF;display:flex;align-items:center;justify-content:center;gap:8px}
+.rrow{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}.rrow b{flex:1;font-size:15px}
+.rrow button{height:38px;padding:0 12px;border-radius:11px;font-weight:800;font-size:13px}.rrow .w{background:#25D366;color:#fff}.rrow .c{background:#EEF3F0;color:var(--ink)}
 /* sheets */
 html.slock,html.slock body{overflow:hidden}
 .sheet.sx{display:flex;flex-direction:column;padding:0;overflow:hidden;max-height:90vh;max-height:90dvh}
@@ -620,6 +631,73 @@ function openMonthPicker(){
  s.querySelector('#goNow').onclick=function(){S.month=curMonth();closeSheet();render()};
 }
 
+
+/* ===== countdown + calendar + reminders ===== */
+function pDate(i){return period()==='month'?pKey(i)+'-01':pKey(i)}
+function daysTo(k){return Math.round((dUTC(k)-dUTC(todayKey()))/86400000)}
+function dnum(n){return n===0?'النهارده':n===1?'بكرة':n===2?'بعد يومين':'بعد '+n+' يوم'}
+function countdownHtml(){
+ var d=S.data,n=d.members.length,ci=pToday(),h='<div class="cd">';
+ var nextI=ci<0?0:ci+1,nd=nextI<n?daysTo(pDate(nextI)):null;
+ if(ci<0){var dd=daysTo(pDate(0));h+='<div class="c w"><div class="lb">⏳ أول دفعة</div><div class="big">'+(dd===0?'النهارده':dd+'<small>يوم</small>')+'</div><div class="sub">'+esc(dLabel(pDate(0)))+'</div></div>'}
+ else if(ci>=n){h+='<div class="c w"><div class="lb">🎉 الجمعية خلصت</div><div class="sub">كل الأدوار اتقبضت</div></div>'}
+ else{
+  h+='<div class="c"><div class="lb">الدفعة الجاية</div>'+(nd===null?'<div class="big" style="font-size:18px">آخر دور</div>':'<div class="big">'+(nd===0?'النهارده':nd+'<small>يوم</small>')+'</div><div class="sub">'+esc(dLabel(pDate(nextI)))+'</div>')+'</div>';
+  var mi=S.me?collectIdxOf(S.me):-1;
+  if(mi>=0){
+   var md=daysTo(pDate(mi));
+   h+='<div class="c"><div class="lb">دورك في القبض</div>'+(mi<ci?'<div class="big" style="font-size:18px">اتقبض ✅</div>':mi===ci?'<div class="big now" style="font-size:19px">دورك دلوقتي 🎉</div>':'<div class="big">'+md+'<small>يوم</small></div><div class="sub">'+esc(dLabel(pDate(mi)))+'</div>')+'</div>';
+  }else h+='<div class="c"><div class="lb">دورك في القبض</div><div class="sub" style="margin-top:6px">اختار اسمك عشان نحسبه</div></div>';
+  h+='<div class="c w" style="padding:8px 10px"><div class="cdb" style="margin:0"><button id="bIcs">📅 أضف المواعيد للتقويم</button></div></div>';
+ }
+ return h+'</div>';
+}
+function icsEsc(s){return String(s).replace(/[\\;,]/g,function(c){return '\\'+c}).replace(/\n/g,'\\n')}
+function compact(k){return k.replace(/-/g,'')}
+function buildIcs(){
+ var d=S.data,n=d.members.length,ci=Math.max(0,pToday()),mi=S.me?collectIdxOf(S.me):-1,nm=d.circle.name;
+ var L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Gamaeya//AR//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+ var stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+ function ev(id,date,title,desc,alarmDays){
+  var end=dKey(dUTC(date)+86400000);
+  L.push('BEGIN:VEVENT','UID:'+id+'@gamaeya','DTSTAMP:'+stamp,'DTSTART;VALUE=DATE:'+compact(date),'DTEND;VALUE=DATE:'+compact(end),'SUMMARY:'+icsEsc(title),'DESCRIPTION:'+icsEsc(desc),'TRANSP:TRANSPARENT');
+  L.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(title),'TRIGGER:-P'+alarmDays+'D','END:VALARM','END:VEVENT');
+ }
+ for(var i=ci;i<n;i++){
+  if(daysTo(pDate(i))<0)continue;
+  ev(S.code+'-pay-'+i,pDate(i),'💰 موعد دفع الجمعية: '+nm,'القسط '+fmt(d.circle.amount)+' ج.م · '+pLabel(pKey(i)),0);
+ }
+ if(mi>=0&&daysTo(pDate(mi))>=0)ev(S.code+'-collect-'+mi,pDate(mi),'🏆 دورك تقبض: '+nm,'المبلغ '+fmt(Number(d.circle.amount)*n)+' ج.م',1);
+ L.push('END:VCALENDAR');
+ return L.join('\r\n');
+}
+function addToCalendar(){
+ var txt=buildIcs();
+ try{
+  var b=new Blob([txt],{type:'text/calendar;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download='gamaeya.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);
+  toast('تم تجهيز ملف التقويم');
+ }catch(e){location.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(txt)}
+}
+function reminderText(name){
+ var d=S.data;return 'السلام عليكم يا '+name+' 🌷\nتذكير ودّي بقسط جمعية "'+d.circle.name+'" عن '+pLabel(S.month)+' ('+fmt(d.circle.amount)+' ج.م).\nلو دفعت ارفع سكرين شوت التحويل من هنا:\n'+link();
+}
+function copyText(t,msg){
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast(msg)},function(){fallbackCopy(t,msg)})}else fallbackCopy(t,msg)
+}
+function fallbackCopy(t,msg){var a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();var ok=false;try{ok=document.execCommand('copy')}catch(e){}a.remove();toast(ok?msg:'انسخ الرسالة يدوي')}
+function openReminders(){
+ var d=S.data,un=d.members.filter(function(m){return !isPaid(m.id,S.month)});
+ if(!un.length){toast('الكل دفع 🎉');return}
+ var h='<h2>ذكّر اللي لسه ما دفعش</h2><p class="s">اختار الشخص وهتفتح معاك رسالة واتساب جاهزة. لو واتساب ما اتفتحش استخدم "نسخ".</p>';
+ un.forEach(function(m){h+='<div class="rrow"><b>'+esc(m.name)+'</b><button class="w" data-w="'+esc(m.id)+'">واتساب</button><button class="c" data-c="'+esc(m.id)+'">نسخ</button></div>'});
+ h+='<button class="btn" id="rAll">نسخ رسالة واحدة للجروب</button>';
+ var s=sheet(h);
+ function nameOf(id){return d.members.filter(function(m){return m.id===id})[0].name}
+ s.querySelectorAll('[data-w]').forEach(function(b){b.onclick=function(){window.open('https://wa.me/?text='+encodeURIComponent(reminderText(nameOf(b.dataset.w))),'_blank')}});
+ s.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){copyText(reminderText(nameOf(b.dataset.c)),'تم نسخ الرسالة')}});
+ s.querySelector('#rAll').onclick=function(){copyText('تذكير بقسط جمعية "'+d.circle.name+'" عن '+pLabel(S.month)+' ('+fmt(d.circle.amount)+' ج.م) لـ: '+un.map(function(m){return m.name}).join('، ')+'\nارفعوا سكرين شوت التحويل من هنا:\n'+link(),'تم نسخ الرسالة')};
+}
 function openShare(){
  var h='<h2>رابط الجمعية</h2><p class="s">ابعته للصحاب. أي حد معاه الرابط يقدر يشوف الجمعية وإثباتات الدفع، فابعته للأعضاء بس.</p><div class="code">'+esc(link())+'</div>'+
   '<button class="btn" id="cp">نسخ الرابط</button><button class="btn alt" id="wa">إرسال على واتساب</button>';
@@ -772,11 +850,13 @@ function render(){
  h+='<div class="pc cur"><div style="min-width:0"><div class="lb">'+(after?'الجمعية خلصت 🎉':before?'أول قبض (الجمعية لسه مبدأتش)':'🏆 قبض '+W().cur)+'</div><div class="nm">'+esc(c0?c0.name:'')+'</div><div class="mo">'+esc(pLabel(cm))+'</div></div><div class="amt"><span class="num">'+fmt(total)+'</span> ج.م<small>المبلغ الإجمالي</small></div></div>';
  h+='<div class="pc"><div class="lb">قبض '+W().nxt+'</div><div class="nm">'+(c1?esc(c1.name):'—')+'</div><div class="mo">'+(c1?esc(pLabel(pKey(ci+1))):'آخر دور')+'</div></div>';
  h+='<div class="pc"><div class="lb">اللي بعده</div><div class="nm">'+(c2?esc(c2.name):'—')+'</div><div class="mo">'+(c2?esc(pLabel(pKey(ci+2))):'—')+'</div></div></div>';
+ h+=countdownHtml();
  var paidN=d.members.filter(function(m){return isPaid(m.id,S.month)}).length,pct=Math.round(paidN/n*100);
  h+='<div class="sec prog"><div class="t"><span>التحصيل في '+esc(pLabel(S.month))+'</span><span>دفع <b class="num">'+paidN+'</b> من <b class="num">'+n+'</b></span></div><div class="bar"><i style="width:'+pct+'%"></i></div></div>';
  var vc=collectorAt(vi);
  h+='<div class="mnav"><button class="arr" id="bPrev" aria-label="'+W().prev+'"'+(vi<=0?' disabled':'')+'>'+IC.right+'</button><button class="mlab" id="bMon">'+esc(pLabel(S.month))+' '+IC.chev+'</button><button class="arr" id="bNext" aria-label="'+W().next+'"'+(vi>=n-1?' disabled':'')+'>'+IC.left+'</button></div>';
  if(vc)h+='<div style="text-align:center;font-size:13px;color:var(--mute);margin-top:6px;font-weight:700">قبض '+(period()==='month'?'الشهر':period()==='week'?'الأسبوع':'الفترة')+' ده: <b style="color:#8A6A12">'+esc(vc.name)+'</b></div>';
+ if(paidN<n&&vi<=pToday())h+='<button class="rem" id="bRem">🔔 ذكّر اللي لسه ما دفعش ('+(n-paidN)+')</button>';
  h+='<div class="chips">'+[['all','الكل'],['paid','اللي دفعوا'],['unpaid','اللي لسه مدفعوش']].map(function(f){return '<button class="chip'+(S.filter===f[0]?' on':'')+'" data-f="'+f[0]+'">'+f[1]+'</button>'}).join('')+'</div>';
  var rows=d.members.filter(function(m){var p=isPaid(m.id,S.month);return S.filter==='all'||(S.filter==='paid'?p:!p)});
  h+='<div class="list">';
@@ -805,6 +885,7 @@ function render(){
 function bind(){
  var q=function(s){return $app.querySelector(s)};
  q('#bShare').onclick=openShare;
+ var bi=q('#bIcs');if(bi)bi.onclick=addToCalendar;var br=q('#bRem');if(br)br.onclick=openReminders;
  var bn=q('#bNew');if(bn)bn.onclick=function(){openSetup(false)};
  $app.querySelectorAll('[data-sw]').forEach(function(b){b.onclick=function(){var c=b.dataset.sw;if(c===S.code)return;location.hash='#c='+c;S.filter='all';boot()}});
  var bs=q('#bSet');if(bs)bs.onclick=function(){openSetup(true)};
