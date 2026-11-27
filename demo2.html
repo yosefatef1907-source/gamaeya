@@ -297,9 +297,13 @@ NDpJx8T/cICk3mcUAiPOfuDA66gDc48Z76zwGkPcJd4hAgrKPuKh7W26zffqHAAlpfuuDp4GLzL8HE0y
 <script>
 const A=document.getElementById('app');
 function R(v){
- if(v=='create')A.innerHTML=`<div class="card"><h2>إنشاء جمعية جديدة</h2><p>الخطوة الجاية: شاشة تعليمات المنظم.</p><button class="btn ghost" onclick="R()">رجوع</button></div>`;
+ if(v=='create')A.innerHTML=`<div class="card"><h2>إنشاء جمعية جديدة</h2><p>الخطوة الجاية: بيانات الجمعية (الاسم، المبلغ، الأعضاء).</p><button class="btn ghost" onclick="R('inst')">رجوع</button></div>`;
+ else if(v=='inst')A.innerHTML=`<div class="card" style="text-align:right"><div style="font-size:34px;text-align:center">👑</div><h2 style="text-align:center">إنت هتبقى المنظم</h2><p style="text-align:center">اللي بيعمل الجمعية هو المنظم. ده اللي تقدر تعمله:</p>
+<b style="font-size:14px">صلاحياتك كمنظم</b><div style="font-size:14px;line-height:2;margin:4px 0 12px">✅ تحدد اسم الجمعية والمبلغ والدورة وترتيب الأدوار<br>✅ تضيف الأعضاء بأسمائهم وأرقام موبايلاتهم<br>✅ تسجل مين دفع وتتابع التحصيل<br>✅ تبعت بيانات الدخول لكل عضو على واتساب<br>✅ تبعت تذكيرات الدفع<br>✅ تعيد باسورد أي عضو لرقم موبايله لو نساه</div>
+<b style="font-size:14px">اللي بيشوفه الأعضاء</b><div style="font-size:14px;line-height:2;margin:4px 0 12px">👀 مين دفع ودور مين في القبض<br>⏳ عد تنازلي للدفعة الجاية ولدورهم<br>🔔 تذكيرات واتساب بمواعيد الدفع<br>🔑 يدخلوا باسم الجمعية والباسورد، ويغيروا الباسورد من الإعدادات<br>🔒 الأعضاء بيشوفوا بس، ومش بيعدلوا في الدفعات</div>
+<button class="btn" onclick="R('create')">فهمت، كمّل</button><button class="btn ghost" onclick="R()">رجوع</button></div>`;
  else if(v=='login')A.innerHTML=`<div class="card"><h2>عندي جمعية</h2><p>الخطوة الجاية: تسجيل الدخول باسم الجمعية والباسورد.</p><button class="btn ghost" onclick="R()">رجوع</button></div>`;
- else A.innerHTML=`<div class="hero"><div class="e">🤝</div><h1>جمعيتي</h1></div><button class="btn" onclick="R('create')">إنشاء جمعية جديدة</button><button class="btn alt" onclick="R('login')">عندي جمعية</button>`;
+ else A.innerHTML=`<div class="hero"><svg width="104" height="104" viewBox="0 0 100 100" style="border-radius:24px;box-shadow:0 10px 26px rgba(11,93,75,.35)"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B5D4B"/><stop offset="1" stop-color="#13A58A"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#g)"/><path d="M80.07 60.94A32 32 0 0 1 25.49 70.57" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><g fill="#FFFFFF"><polygon points="17.8,58.2 30.7,69.1 20.7,74.9"/></g><path d="M19.93 39.06A32 32 0 0 1 74.51 29.43" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><g fill="#FFFFFF"><polygon points="82.2,41.8 69.3,30.9 79.3,25.1"/></g><circle cx="50" cy="50" r="15" fill="#F4C25B"/><circle cx="50" cy="50" r="9.5" fill="none" stroke="#0B5D4B" stroke-width="2.4" opacity=".55"/></svg><h1>جمعيتي</h1></div><button class="btn" onclick="R('inst')">إنشاء جمعية جديدة</button><button class="btn alt" onclick="R('login')">عندي جمعية</button>`;
 }
 R();
 </script></body></html>
