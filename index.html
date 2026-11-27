@@ -550,7 +550,7 @@ function collectIdxOf(mid){return S.data.members.findIndex(function(m){return m.
 
 /* ===== boot ===== */
 function parseHash(){var h=location.hash.replace(/^#/,''),o={};h.split('&').forEach(function(kv){var p=kv.split('=');if(p[0])o[p[0]]=decodeURIComponent(p[1]||'')});return o}
-var APP_VER='v5-2026-11-27';
+var APP_VER='v6-2026-11-27';
 function checkUpdate(){
  try{fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(x){
   var m=x.match(/var APP_VER='([^']+)'/);
@@ -662,36 +662,8 @@ function countdownHtml(){
    var md=daysTo(pDate(mi));
    h+='<div class="c"><div class="lb">دورك في القبض</div>'+(mi<ci?'<div class="big" style="font-size:18px">اتقبض ✅</div>':mi===ci?'<div class="big now" style="font-size:19px">دورك دلوقتي 🎉</div>':'<div class="big">'+md+'<small>يوم</small></div><div class="sub">'+esc(dLabel(pDate(mi)))+'</div>')+'</div>';
   }else h+='<div class="c"><div class="lb">دورك في القبض</div><div class="sub" style="margin-top:6px">اختار اسمك عشان نحسبه</div></div>';
-  h+='<div class="c w" style="padding:8px 10px"><div class="cdb" style="margin:0"><button id="bIcs">📅 أضف المواعيد للتقويم</button></div></div>';
  }
  return h+'</div>';
-}
-function icsEsc(s){return String(s).replace(/[\\;,]/g,function(c){return '\\'+c}).replace(/\n/g,'\\n')}
-function compact(k){return k.replace(/-/g,'')}
-function buildIcs(){
- var d=S.data,n=d.members.length,ci=Math.max(0,pToday()),mi=S.me?collectIdxOf(S.me):-1,nm=d.circle.name;
- var L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Gamaeya//AR//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
- var stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
- function ev(id,date,title,desc,alarmDays){
-  var end=dKey(dUTC(date)+86400000);
-  L.push('BEGIN:VEVENT','UID:'+id+'@gamaeya','DTSTAMP:'+stamp,'DTSTART;VALUE=DATE:'+compact(date),'DTEND;VALUE=DATE:'+compact(end),'SUMMARY:'+icsEsc(title),'DESCRIPTION:'+icsEsc(desc),'TRANSP:TRANSPARENT');
-  L.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(title),'TRIGGER:-P'+alarmDays+'D','END:VALARM','END:VEVENT');
- }
- for(var i=ci;i<n;i++){
-  if(daysTo(pDate(i))<0)continue;
-  ev(S.code+'-pay-'+i,pDate(i),'💰 موعد دفع الجمعية: '+nm,'القسط '+fmt(d.circle.amount)+' ج.م · '+pLabel(pKey(i)),0);
- }
- if(mi>=0&&daysTo(pDate(mi))>=0)ev(S.code+'-collect-'+mi,pDate(mi),'🏆 دورك تقبض: '+nm,'المبلغ '+fmt(Number(d.circle.amount)*n)+' ج.م',1);
- L.push('END:VCALENDAR');
- return L.join('\r\n');
-}
-function addToCalendar(){
- var txt=buildIcs();
- try{
-  var b=new Blob([txt],{type:'text/calendar;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');
-  a.href=u;a.download='gamaeya.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);
-  toast('تم تجهيز ملف التقويم');
- }catch(e){location.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(txt)}
 }
 function reminderText(name){
  var d=S.data;return 'السلام عليكم يا '+name+' 🌷\nتذكير ودّي بقسط جمعية "'+d.circle.name+'" عن '+pLabel(S.month)+' ('+fmt(d.circle.amount)+' ج.م).\nلو دفعت ارفع سكرين شوت التحويل من هنا:\n'+link();
@@ -899,7 +871,7 @@ function render(){
 function bind(){
  var q=function(s){return $app.querySelector(s)};
  q('#bShare').onclick=openShare;
- var bi=q('#bIcs');if(bi)bi.onclick=addToCalendar;var br=q('#bRem');if(br)br.onclick=openReminders;
+var br=q('#bRem');if(br)br.onclick=openReminders;
  var bn=q('#bNew');if(bn)bn.onclick=function(){openSetup(false)};
  $app.querySelectorAll('[data-sw]').forEach(function(b){b.onclick=function(){var c=b.dataset.sw;if(c===S.code)return;location.hash='#c='+c;S.filter='all';boot()}});
  var bs=q('#bSet');if(bs)bs.onclick=function(){openSetup(true)};
