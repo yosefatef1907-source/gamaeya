@@ -7,11 +7,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="الجمعية">
+<meta name="apple-mobile-web-app-title" content="جمعيتي">
 <meta name="robots" content="noindex,nofollow">
 <link rel="apple-touch-icon" href="">
 <link rel="icon" href="">
-<title>الجمعية</title>
+<title>جمعيتي</title>
 <style>
 @font-face{font-family:Cairo;font-weight:300 900;src:url("data:font/woff2;base64,d09GMgABAAAAAHf4ABMAAAABRqAAAHeGAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGooWG7oYHJFGP0hWQVKJGwZgP1NUQVSBJicuAIoiL2QRCAqBvWyBoRgLhhQAMIKhGAE2AiQDjCQEIAWFbgelYFvsM3ECN3ck1Fp6s+qKcb+bF1XAjj3idhIKGclwclx3O4jKz84By/7//6ykMmSmVdO0wIC5XT2IoLIqUUTr4+CkQEgNgkhDpy8bRtNOzL4PQX3J7iErmlhxjiiNoiFbq\
 ryI7kUagh6DidOW5ZNkpg37RkjP4QRNAxEgAmGjMwmBogiBZhMBosQjsRDnus5Wy9R0Se+YCBvhnBW2zBFBvI8GYZCDo+OeydnC/GF4PHZHbtQj6fHp6SzexFXh8VNvT8Ro0ZxrSj1AXco927s6v+Y08TvM74Mr75u5//vaCCN8t1Oo6YShw4Vaa60UdOoGfzWIYeP1+iPDXaNlDvN54bweJV9lEeBOD5EiQ/vwH+HU3p+VZIjTpMQqELuHhDvJEUFKcIion+fr9ue+N5s3YwwGY+xjMNYkDdkak7WviepLy\
@@ -438,6 +438,19 @@ html.slock,html.slock body{overflow:hidden}
 .sheet{max-width:620px;border-radius:22px;max-height:94vh;max-height:94dvh}
 .mask{align-items:center}
 }
+
+.wc{background:#fff;border-radius:20px;box-shadow:var(--sh);padding:20px;margin:14px}
+.wh{margin:6px 0 4px;font-size:20px;font-weight:900}.wp{color:var(--mute);margin:4px 0 12px;line-height:1.8;font-size:14px}
+.wl{font-size:14px;line-height:2;margin:4px 0 12px}
+.wr{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);gap:8px}.wr:last-of-type{border:0}
+.steps{display:flex;gap:6px;margin:calc(18px + var(--sat)) 14px 0}.steps i{flex:1;height:5px;border-radius:9px;background:var(--line)}.steps i.on{background:var(--brand2)}
+.seg{display:flex;gap:8px}.seg button{flex:1;height:48px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font-weight:800;font-size:14px}.seg button.on{border-color:var(--brand2);background:var(--okbg);color:var(--brand)}
+.btn.ghost{background:none;color:var(--mute);font-weight:700;height:44px;margin-top:4px;font-size:15px}
+.xx{flex:0 0 28px;background:none;color:var(--bad);font-size:24px;font-weight:700}
+.role{font-size:11px;font-weight:800;padding:2px 10px;border-radius:99px;background:rgba(255,255,255,.22);color:#fff;margin-inline-start:6px;vertical-align:middle}.role.o{background:#F4C25B;color:#3d2c00}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);font-weight:700;font-size:15px}
+.srow .tg{height:34px;padding:0 14px;border-radius:99px;background:#fff;border:1px solid var(--line);font-weight:800;font-size:13px}
+.rs-b{width:34px;height:38px;border-radius:11px;background:#EEF3F0;font-size:15px;flex:none}
 </style>
 </head>
 <body>
@@ -497,10 +510,11 @@ var API={
   return Promise.resolve({code:code,admin:admin});
  },
  state:function(code){
-  if(!DEMO)return rpc('g_state',{p_code:code});
+  if(!DEMO){var t=lsGet('gam_tok_'+code);if(t)return rpc('g_state2',{p_code:code,p_token:t}).then(function(d){return d===null?rpc('g_state',{p_code:code}):d});return rpc('g_state',{p_code:code})}
   var d=demoLoad(code);return Promise.resolve(d?demoView(d):null);
  },
  update:function(code,admin,name,amount,start,per,members){
+  if(!DEMO&&lsGet('gam_tok_'+code))return rpc('g_update2',{p_token:lsGet('gam_tok_'+code),p_name:name,p_amount:amount,p_start:start,p_members:members});
   if(!DEMO)return rpc('g_update',{p_code:code,p_admin:admin,p_name:name,p_amount:amount,p_start:start,p_period:per,p_members:members});
   var d=demoLoad(code);if(!d||d.admin!==admin)return Promise.reject(new Error('denied'));
   d.circle={name:name,amount:amount,start:start,period:per};
@@ -508,6 +522,7 @@ var API={
   d.payments=d.payments.filter(function(p){return keep[p.m]});demoSave(code,d);return Promise.resolve(demoView(d));
  },
  set:function(code,member,month,paid,proof,keepProof){
+  if(!DEMO&&lsGet('gam_tok_'+code))return rpc('g_set2',{p_token:lsGet('gam_tok_'+code),p_member:member,p_month:month,p_paid:paid,p_proof:proof,p_keep:keepProof});
   if(!DEMO)return rpc('g_set',{p_code:code,p_member:member,p_month:month,p_paid:paid,p_proof:proof,p_keep:keepProof});
   var d=demoLoad(code);if(!d)return Promise.reject(new Error('denied'));
   var p=d.payments.filter(function(x){return x.m===member&&x.month===month})[0];
@@ -516,6 +531,7 @@ var API={
   demoSave(code,d);return Promise.resolve(demoView(d));
  },
  proof:function(code,member,month){
+  if(!DEMO&&lsGet('gam_tok_'+code))return rpc('g_proof2',{p_token:lsGet('gam_tok_'+code),p_member:member,p_month:month});
   if(!DEMO)return rpc('g_proof',{p_code:code,p_member:member,p_month:month});
   var d=demoLoad(code),p=d&&d.payments.filter(function(x){return x.m===member&&x.month===month})[0];
   return Promise.resolve(p?p.proof:null);
@@ -523,9 +539,9 @@ var API={
 };
 
 /* ===== state ===== */
-var S={code:null,admin:null,me:null,data:null,month:null,filter:'all',sheet:null,proofCache:{},busy:false};
-function isAdmin(){return !!S.admin}
-function canEdit(mid){return isAdmin()||S.me===mid}
+var S={login:false,role:null,code:null,admin:null,me:null,data:null,month:null,filter:'all',sheet:null,proofCache:{},busy:false};
+function isAdmin(){return S.login?S.role==='organizer':!!S.admin}
+function canEdit(mid){return S.login?S.role==='organizer':(isAdmin()||S.me===mid)}
 function toast(t){var e=document.querySelector('.toast');if(e)e.remove();e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(function(){e.remove()},2600)}
 function netErr(e){toast(e&&e.message==='denied'?'مش مسموحلك بالتعديل ده':'مفيش اتصال بالنت، جرّب تاني')}
 function link(){return location.origin+location.pathname+'#c='+S.code}
@@ -550,7 +566,7 @@ function collectIdxOf(mid){return S.data.members.findIndex(function(m){return m.
 
 /* ===== boot ===== */
 function parseHash(){var h=location.hash.replace(/^#/,''),o={};h.split('&').forEach(function(kv){var p=kv.split('=');if(p[0])o[p[0]]=decodeURIComponent(p[1]||'')});return o}
-var APP_VER='v6-2026-11-27';
+var APP_VER='v7-2026-11-27';
 function checkUpdate(){
  try{fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(x){
   var m=x.match(/var APP_VER='([^']+)'/);
@@ -571,22 +587,27 @@ function boot(){
  if(!code||!/^[A-Za-z0-9]{6,64}$/.test(code)){return showWelcome()}
  loading();
  API.state(code).then(function(d){
-  if(!d){lsDel('gam_last');return showWelcome('الرابط ده مش شغال أو الجمعية مش موجودة. اطلب الرابط الصحيح من اللي بعتهولك.')}
-  S.code=code;S.admin=lsGet('gam_admin_'+code);S.me=lsGet('gam_me_'+code);S.data=d;lsSet('gam_last',code);
-  if(!S.me||!d.members.some(function(m){return m.id===S.me}))S.me=null;
+  if(d&&d.error){lsDel('gam_tok_'+code);dropList(code);lsDel('gam_last');return showLogin('انتهت الجلسة، ادخل تاني')}
+  if(!d){lsDel('gam_last');return showWelcome('الرابط ده مش شغال. لو جمعيتك بتدخل بالباسورد اضغط "عندي جمعية".')}
+  S.code=code;S.login=!!d.role;S.role=d.role||null;S.admin=S.login?null:lsGet('gam_admin_'+code);S.me=S.login?d.me:lsGet('gam_me_'+code);S.data=d;lsSet('gam_last',code);
+  if(S.login)listAdd(code,d.circle.name);
+  if(!S.login&&(!S.me||!d.members.some(function(m){return m.id===S.me})))S.me=null;
   S.month=curMonth();render();
-  syncHash();if(!S.me)openWho(true);
+  syncHash();
+  if(S.login){if(S.justCreated){S.justCreated=false;toast('تم إنشاء الجمعية 🎉')}if(LOGIN_FRESH&&d.must_change){LOGIN_FRESH=false;openChangePw(true)}}
+  else if(!S.me)openWho(true);
  }).catch(function(){
   $app.innerHTML='<div class="wel"><div class="logo">📡</div><h1>مفيش اتصال</h1><p>تأكد من النت وجرّب تاني.</p><button class="btn" id="retry">إعادة المحاولة</button></div>';
   document.getElementById('retry').onclick=boot;
  });
 }
 var ICON512='';
-function drawIcon(n){var c=document.createElement('canvas');c.width=c.height=n;var x=c.getContext('2d'),k=n/1024;
- var g=x.createLinearGradient(0,0,0,n);g.addColorStop(0,'#084E3E');g.addColorStop(1,'#13A58A');x.fillStyle=g;x.fillRect(0,0,n,n);
- var cx=n/2;x.strokeStyle='#fff';x.lineWidth=44*k;x.beginPath();x.arc(cx,cx,330*k,0,7);x.stroke();
- for(var i=0;i<6;i++){var a=(i*60-90)*Math.PI/180;x.fillStyle=i?'#fff':'#F4C25B';x.beginPath();x.arc(cx+330*k*Math.cos(a),cx+330*k*Math.sin(a),78*k,0,7);x.fill()}
- x.fillStyle='#fff';x.beginPath();x.arc(cx,cx,150*k,0,7);x.fill();x.fillStyle='#0B5D4B';x.beginPath();x.arc(cx,cx,100*k,0,7);x.fill();
+function drawIcon(n){var c=document.createElement('canvas');c.width=c.height=n;var x=c.getContext('2d');
+ var g=x.createLinearGradient(0,0,n,n);g.addColorStop(0,'#0B5D4B');g.addColorStop(1,'#13A58A');x.fillStyle=g;x.fillRect(0,0,n,n);
+ x.save();x.scale(n/100,n/100);x.strokeStyle='#fff';x.fillStyle='#fff';x.lineWidth=8;x.lineCap='round';
+ x.stroke(new Path2D('M80.07 60.94A32 32 0 0 1 25.49 70.57'));x.fill(new Path2D('M17.8 58.2L30.7 69.1L20.7 74.9Z'));
+ x.stroke(new Path2D('M19.93 39.06A32 32 0 0 1 74.51 29.43'));x.fill(new Path2D('M82.2 41.8L69.3 30.9L79.3 25.1Z'));
+ x.fillStyle='#F4C25B';x.beginPath();x.arc(50,50,15,0,7);x.fill();x.strokeStyle='rgba(11,93,75,.55)';x.lineWidth=2.4;x.beginPath();x.arc(50,50,9.5,0,7);x.stroke();x.restore();
  return c.toDataURL('image/png')}
 function setIcons(){try{var a=drawIcon(180);ICON512=drawIcon(512);document.querySelectorAll('link[rel=apple-touch-icon],link[rel=icon]').forEach(function(l){l.href=a})}catch(e){}}
 setIcons();
@@ -594,7 +615,7 @@ function syncHash(){
  if(!S.code)return;
  var u='#c='+S.code+(S.admin?'&a='+S.admin:'')+(S.me?'&m='+S.me:'');
  try{history.replaceState(null,'',location.pathname+u)}catch(e){}
- var full=location.origin+location.pathname,mf={name:'الجمعية',short_name:'الجمعية',lang:'ar',dir:'rtl',display:'standalone',orientation:'portrait',background_color:'#F3F6F4',theme_color:'#0B5D4B',start_url:full+u,scope:full,icons:[{src:ICON512,sizes:'512x512',type:'image/png',purpose:'any'}]};
+ var full=location.origin+location.pathname,mf={name:'جمعيتي',short_name:'جمعيتي',lang:'ar',dir:'rtl',display:'standalone',orientation:'portrait',background_color:'#F3F6F4',theme_color:'#0B5D4B',start_url:full+u,scope:full,icons:[{src:ICON512,sizes:'512x512',type:'image/png',purpose:'any'}]};
  try{var l=document.querySelector('link[rel=manifest]');if(l&&l.href.indexOf('blob:')===0)URL.revokeObjectURL(l.href);if(!l){l=document.createElement('link');l.rel='manifest';document.head.appendChild(l)}
  l.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}))}catch(e){}
 }
@@ -609,10 +630,148 @@ function switcherHtml(curName){
  l.forEach(function(x){h+='<button class="swc'+(x.code===S.code?' on':'')+'" data-sw="'+esc(x.code)+'">'+esc(x.name)+'</button>'});
  return h+'<button class="swc add" id="bNew">＋ جمعية جديدة</button></div>';
 }
+/* ===== login layer (v7) ===== */
+var LOGO_SVG='<svg viewBox="0 0 100 100" style="width:__S__px;height:__S__px;border-radius:24px;box-shadow:0 10px 26px rgba(11,93,75,.35)"><defs><linearGradient id="lg__S__" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B5D4B"/><stop offset="1" stop-color="#13A58A"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#lg__S__)"/><path d="M80.07 60.94A32 32 0 0 1 25.49 70.57" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><g fill="#FFFFFF"><polygon points="17.8,58.2 30.7,69.1 20.7,74.9"/></g><path d="M19.93 39.06A32 32 0 0 1 74.51 29.43" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/><g fill="#FFFFFF"><polygon points="82.2,41.8 69.3,30.9 79.3,25.1"/></g><circle cx="50" cy="50" r="15" fill="#F4C25B"/><circle cx="50" cy="50" r="9.5" fill="none" stroke="#0B5D4B" stroke-width="2.4" opacity=".55"/></svg>';
+function logo(s){return LOGO_SVG.replace(/__S__/g,s)}
+function D(s){return String(s||'').replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d)}).trim()}
+function appUrl(){return location.origin+location.pathname}
+function tokOf(code){return lsGet('gam_tok_'+code)}
+function listAdd(code,name){var l=myList().filter(function(x){return x.code!==code});l.push({code:code,name:name});lsSet('gam_list',JSON.stringify(l.slice(-12)))}
+function dropList(code){lsSet('gam_list',JSON.stringify(myList().filter(function(x){return x.code!==code})))}
+var LOGIN_FRESH=false,LOGIN_PW='';
+function perTxt(p){return p==='month'?'شهرياً':p==='week'?'أسبوعياً':'كل أسبوعين'}
+function perUnit(p){return p==='month'?'شهر':p==='week'?'أسبوع':'فترة'}
+function waUrl(m,t){return 'https://wa.me/'+(m&&m.phone?'2'+m.phone:'')+'?text='+encodeURIComponent(t)}
+function loginText(m){var c=S.data.circle;return 'أهلاً '+m.name+' 👋\nانضميت لجمعية "'+c.name+'" ('+fmt(c.amount)+' ج '+perTxt(c.period||'month')+').\nادخل من هنا: '+appUrl()+'\nاسم الجمعية: '+c.name+'\nالباسورد: رقم موبايلك (تقدر تغيره بعد الدخول)'}
+function errTxt(e){var m=e&&e.message;
+ return m==='name_taken'?'الاسم ده مستخدم قبل كده، اختار اسم تاني':m==='phone_dup'?'في رقمين متكررين':m==='phone'?'رقم موبايل غلط (١١ رقم يبدأ بـ 01)':m==='organizer'?'المنظم لازم يفضل في الجمعية':m==='denied'?'مش مسموحلك بالتعديل':m==='members'?'لازم من ٢ لـ ٤٠ عضو':'مفيش اتصال بالنت، جرّب تاني'}
+function pwErr(c){return c==='bad_old'?'الباسورد الحالي غلط':c==='format'?'أرقام بس، ٤ أرقام على الأقل':c==='is_phone'?'ما ينفعش يبقى رقم موبايلك':c==='taken'?'الباسورد ده مستخدم، اختار غيره':c==='locked'?'محاولات كتير غلط، جرّب بعد شوية':c==='denied'?'الجلسة انتهت، ادخل تاني':'حصل خطأ، جرّب تاني'}
+
+var W3={name:'',amount:'',period:'month',start:'',members:[]};
+function startCreate(){W3={name:'',amount:'',period:'month',start:todayKey(),members:[{n:'',p:''},{n:'',p:''}]};S.code=null;wz('inst')}
+function wz(v){
+ var h='',e='<div class="err" id="wer"></div>';
+ if(v==='inst'){
+  h='<div class="wc" style="margin-top:calc(18px + var(--sat))"><div style="font-size:34px;text-align:center">👑</div><h2 class="wh">إنت هتبقى المنظم</h2><p class="wp" style="text-align:center">اللي بيعمل الجمعية هو المنظم. ده اللي تقدر تعمله:</p><b style="font-size:14px">صلاحياتك كمنظم</b><div class="wl">✅ تحدد اسم الجمعية والمبلغ والدورة وترتيب الأدوار<br>✅ تضيف الأعضاء بأسمائهم وأرقام موبايلاتهم<br>✅ تسجل مين دفع وتتابع التحصيل<br>✅ تبعت بيانات الدخول لكل عضو على واتساب<br>✅ تبعت تذكيرات الدفع<br>✅ تعيد باسورد أي عضو لرقم موبايله لو نساه</div><b style="font-size:14px">اللي بيشوفه الأعضاء</b><div class="wl">👀 مين دفع ودور مين في القبض<br>⏳ عد تنازلي للدفعة الجاية ولدورهم<br>🔔 تذكيرات واتساب بمواعيد الدفع<br>🔑 يدخلوا باسم الجمعية والباسورد، ويغيروا الباسورد من الإعدادات<br>🔒 الأعضاء بيشوفوا بس، ومش بيعدلوا في الدفعات</div><button class="btn" id="wn">فهمت، كمّل</button><button class="btn ghost" id="wb">رجوع</button></div>';
+  $app.innerHTML=h;document.getElementById('wn').onclick=function(){wz('s1')};document.getElementById('wb').onclick=function(){S.code=null;lsGet('gam_last')?boot():showWelcome()};
+ }else if(v==='s1'){
+  h=wsteps(1)+'<div class="wc"><h2 class="wh">١. بيانات الجمعية</h2><p class="wp">اختار اسم يميزها (الأعضاء هيدخلوا بيه).</p><div class="fld"><label>اسم الجمعية</label><input class="inp" id="gn" maxlength="40" placeholder="مثلاً: جمعية الشلة" value="'+esc(W3.name)+'"></div><div class="fld"><label>المبلغ لكل عضو (جنيه)</label><input class="inp" id="ga" inputmode="numeric" placeholder="1000" style="direction:ltr;text-align:right" value="'+esc(W3.amount)+'"></div><div class="fld"><label>الدورة</label><div class="seg" id="sg"><button data-p="month" class="'+(W3.period==='month'?'on':'')+'">شهرية</button><button data-p="week" class="'+(W3.period==='week'?'on':'')+'">أسبوعية</button><button data-p="biweek" class="'+(W3.period==='biweek'?'on':'')+'">كل أسبوعين</button></div></div><div class="fld"><label>تاريخ أول دفعة</label><input class="inp" id="gd" type="date" style="direction:ltr;text-align:right" value="'+esc(W3.start)+'"></div>'+e+'<button class="btn" id="wn">التالي</button><button class="btn ghost" id="wb">رجوع</button></div>';
+  $app.innerHTML=h;
+  document.querySelectorAll('#sg button').forEach(function(b){b.onclick=function(){W3.period=b.dataset.p;document.querySelectorAll('#sg button').forEach(function(x){x.classList.toggle('on',x===b)})}});
+  document.getElementById('wb').onclick=function(){wz('inst')};
+  document.getElementById('wn').onclick=function(){
+   var n=document.getElementById('gn').value.trim(),a=Number(D(document.getElementById('ga').value).replace(/[,\s،]/g,'')),d=document.getElementById('gd').value,er=document.getElementById('wer');
+   if(!n)return er.textContent='اكتب اسم الجمعية';
+   if(!(a>0))return er.textContent='اكتب المبلغ بالأرقام';
+   if(a>10000000)return er.textContent='المبلغ كبير قوي، اكتب رقم أقل';
+   if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d<'2020-01-01'||d>'2100-12-31')return er.textContent='اختار تاريخ أول دفعة';
+   W3.name=n;W3.amount=a;W3.start=d;wz('s2')};
+ }else if(v==='s2'){
+  h=wsteps(2)+'<div class="wc"><h2 class="wh">٢. الأعضاء</h2><p class="wp">اكتب اسم ورقم موبايل كل عضو. أول صف هو إنت (المنظم) ورقمك بيتسجل كمنظم. رقم الموبايل هو الباسورد المبدئي، وكل عضو يقدر يغيره بعدين.</p><div id="wm"></div><button class="btn alt" id="wa2" style="height:46px;margin-top:6px">+ عضو تاني</button>'+e+'<button class="btn" id="wn">التالي</button><button class="btn ghost" id="wb">رجوع</button></div>';
+  $app.innerHTML=h;
+  function dm(){document.getElementById('wm').innerHTML=W3.members.map(function(m,i){return '<div class="two" style="margin-bottom:8px"><input class="inp" maxlength="30" data-n="'+i+'" placeholder="'+(i===0?'اسمك (المنظم)':'الاسم')+'" value="'+esc(m.n)+'"><input class="inp" data-p="'+i+'" inputmode="tel" placeholder="01xxxxxxxxx" style="direction:ltr;text-align:right" value="'+esc(m.p)+'">'+(i===0?'<span style="flex:0 0 28px"></span>':'<button class="xx" data-x="'+i+'" aria-label="حذف">×</button>')+'</div>'}).join('');
+   document.querySelectorAll('#wm [data-n]').forEach(function(x){x.oninput=function(){W3.members[+x.dataset.n].n=x.value}});
+   document.querySelectorAll('#wm [data-p]').forEach(function(x){x.oninput=function(){W3.members[+x.dataset.p].p=D(x.value).replace(/\D/g,'');}});
+   document.querySelectorAll('#wm [data-x]').forEach(function(x){x.onclick=function(){W3.members.splice(+x.dataset.x,1);dm()}})}
+  dm();
+  document.getElementById('wa2').onclick=function(){if(W3.members.length>=40){document.getElementById('wer').textContent='الحد الأقصى 40 عضو';return}W3.members.push({n:'',p:''});dm()};
+  document.getElementById('wb').onclick=function(){wz('s1')};
+  document.getElementById('wn').onclick=function(){
+   var er=document.getElementById('wer'),L=W3.members.filter(function(m){return m.n.trim()||m.p.trim()});
+   if(L.length<2)return er.textContent='لازم عضوين على الأقل';
+   var seenN={},ps=[];
+   for(var i=0;i<L.length;i++){var m=L[i];
+    if(!m.n.trim())return er.textContent='في رقم من غير اسم';
+    if(!/^01[0-9]{9}$/.test(D(m.p)))return er.textContent='رقم موبايل غلط عند '+m.n.trim()+' (١١ رقم يبدأ بـ 01)';
+    var k=m.n.trim().toLowerCase();if(seenN[k])return er.textContent='الاسم "'+m.n.trim()+'" متكرر. فرّق بينهم';seenN[k]=1;ps.push(D(m.p))}
+   var u={};for(var j=0;j<ps.length;j++){if(u[ps[j]])return er.textContent='في رقمين متكررين';u[ps[j]]=1}
+   W3.members=L.map(function(m){return {n:m.n.trim(),p:D(m.p)}});wz('s3')};
+ }else if(v==='s3'){
+  var n=W3.members.length;
+  h=wsteps(3)+'<div class="wc"><h2 class="wh">٣. راجع وأنشئ</h2><div class="wr"><span>الاسم</span><b>'+esc(W3.name)+'</b></div><div class="wr"><span>المبلغ</span><b>'+fmt(W3.amount)+' ج '+({month:'كل شهر',week:'كل أسبوع',biweek:'كل أسبوعين'})[W3.period]+'</b></div><div class="wr"><span>الأعضاء</span><b>'+n+'</b></div><div class="wr"><span>أول دفعة</span><b>'+esc(dLabel(W3.start))+' '+W3.start.slice(0,4)+'</b></div><div class="wr"><span>القبض لكل دور</span><b>'+fmt(W3.amount*n)+' ج</b></div><p class="wp" style="margin-top:10px">الدور بيتحدد بالترتيب اللي كتبته. تقدر تغيره بعدين.</p>'+e+'<button class="btn" id="wn">إنشاء الجمعية 🎉</button><button class="btn ghost" id="wb">رجوع</button></div>';
+  $app.innerHTML=h;
+  document.getElementById('wb').onclick=function(){wz('s2')};
+  document.getElementById('wn').onclick=function(){
+   var b=this,er=document.getElementById('wer');b.disabled=true;b.textContent='جاري الإنشاء...';er.textContent='';
+   var start=W3.period==='month'?W3.start.slice(0,7):W3.start;
+   rpc('g_create2',{p_name:W3.name,p_amount:W3.amount,p_start:start,p_period:W3.period,p_members:W3.members.map(function(m){return {name:m.n,phone:m.p}})}).then(function(r){
+    lsSet('gam_tok_'+r.code,r.token);listAdd(r.code,W3.name);lsSet('gam_last',r.code);
+    try{history.replaceState(null,'',location.pathname+'#c='+r.code)}catch(x){}
+    S.justCreated=true;boot();
+   }).catch(function(x){b.disabled=false;b.textContent='إنشاء الجمعية 🎉';er.textContent=errTxt(x)})};
+ }
+ window.scrollTo(0,0);
+}
+function wsteps(n){return '<div class="steps">'+[1,2,3].map(function(i){return '<i class="'+(i<=n?'on':'')+'"></i>'}).join('')+'</div>'}
+function showLogin(msg){
+ S.code=null;
+ $app.innerHTML='<div class="wel" style="padding-top:calc(40px + var(--sat))"><div style="margin:0 auto 14px;width:72px">'+logo(72)+'</div><h1>تسجيل الدخول</h1><div class="wc" style="margin:18px 0 0;text-align:right"><div class="fld" style="margin-top:0"><label>اسم الجمعية</label><input class="inp" id="lg" placeholder="اسم الجمعية" autocomplete="off"></div><div class="fld"><label>الباسورد</label><input class="inp" id="lp" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="أول مرة: رقم موبايلك" style="direction:ltr;text-align:right"></div><div class="err" id="wer">'+esc(msg||'')+'</div><button class="btn" id="go">دخول</button><button class="btn ghost" id="wb">رجوع</button></div></div>';
+ var lp=document.getElementById('lp');lp.oninput=function(){lp.value=D(lp.value).replace(/\D/g,'')};
+ document.getElementById('wb').onclick=function(){showWelcome()};
+ function go(){
+  var n=document.getElementById('lg').value.trim(),p=D(lp.value),er=document.getElementById('wer'),b=document.getElementById('go');
+  if(!n||!p)return er.textContent='اكتب اسم الجمعية والباسورد';
+  b.disabled=true;b.textContent='جاري الدخول...';er.textContent='';
+  rpc('g_login',{p_name:n,p_password:p}).then(function(r){
+   if(r&&r.error){b.disabled=false;b.textContent='دخول';er.textContent=r.error==='locked'?'محاولات كتير غلط. استنى ١٥ دقيقة وجرّب تاني':'اسم الجمعية أو الباسورد غلط';return}
+   lsSet('gam_tok_'+r.code,r.token);listAdd(r.code,r.name);lsSet('gam_last',r.code);LOGIN_FRESH=!!r.must_change;LOGIN_PW=p;
+   try{history.replaceState(null,'',location.pathname+'#c='+r.code)}catch(x){}
+   boot();
+  }).catch(function(){b.disabled=false;b.textContent='دخول';er.textContent='مفيش اتصال بالنت، جرّب تاني'});
+ }
+ document.getElementById('go').onclick=go;
+ lp.onkeydown=function(e){if(e.key==='Enter')go()};
+}
+function openChangePw(first){
+ var needOld=!first||!LOGIN_PW;
+ var h='<h2>'+(first?'أهلاً '+esc(meName())+' 👋':'تغيير الباسورد')+'</h2><p class="s">'+(first?'باسوردك دلوقتي هو رقم موبايلك وده سهل يتخمن. تحب تغيره؟ (تقدر تتخطى وتغيره بعدين)':'اكتب الباسورد الحالي والجديد.')+'</p>'+(needOld?'<div class="fld"><label>الباسورد الحالي</label><input class="inp" id="po" type="password" inputmode="numeric" pattern="[0-9]*" style="direction:ltr;text-align:right"></div>':'')+'<div class="fld"><label>باسورد جديد (أرقام بس، ٤ على الأقل)</label><input class="inp" id="p1" type="password" inputmode="numeric" pattern="[0-9]*" style="direction:ltr;text-align:right"></div><div class="fld"><label>تأكيد الباسورد</label><input class="inp" id="p2" type="password" inputmode="numeric" pattern="[0-9]*" style="direction:ltr;text-align:right"></div><div class="err" id="er" style="min-height:18px"></div><button class="btn" id="ps">حفظ</button><button class="btn alt" id="pk">'+(first?'ليس الآن':'رجوع')+'</button>';
+ var s=sheet(h,{lock:first});
+ s.querySelectorAll('input').forEach(function(i){i.oninput=function(){i.value=D(i.value).replace(/\D/g,'')}});
+ var er=s.querySelector('#er');
+ s.querySelector('#pk').onclick=function(){if(first&&tokOf(S.code))rpc('g_skip_prompt',{p_token:tokOf(S.code)}).catch(function(){});closeSheet()};
+ s.querySelector('#ps').onclick=function(){
+  var o=needOld?D(s.querySelector('#po').value):LOGIN_PW,n1=s.querySelector('#p1').value,n2=s.querySelector('#p2').value;
+  if(!/^[0-9]{4,20}$/.test(n1))return er.textContent='أرقام بس، ٤ أرقام على الأقل';
+  if(n1!==n2)return er.textContent='التأكيد مش زي الباسورد';
+  var b=s.querySelector('#ps');b.disabled=true;er.textContent='';
+  rpc('g_change_pw',{p_token:tokOf(S.code),p_old:o,p_new:n1}).then(function(r){
+   if(r&&r.error){b.disabled=false;er.textContent=pwErr(r.error);return}
+   LOGIN_PW=n1;closeSheet();toast('تم تغيير الباسورد ✅')
+  }).catch(function(){b.disabled=false;er.textContent='مفيش اتصال بالنت، جرّب تاني'});
+ };
+}
+function meName(){var m=S.data&&S.data.members.filter(function(x){return x.id===S.me})[0];return m?m.name:''}
+function openSettings(){
+ var org=isAdmin(),h='<h2>الإعدادات</h2><p class="s">'+(org?'أنت المنظم لجمعية "'+esc(S.data.circle.name)+'".':'جمعية "'+esc(S.data.circle.name)+'".')+'</p>';
+ function row(ic,t,id){return '<div class="srow"><span>'+ic+' '+t+'</span><button class="tg" id="'+id+'">فتح</button></div>'}
+ h+=row('🔑','تغيير الباسورد','sPw');
+ if(org)h+=row('✏️','تعديل الجمعية والأعضاء','sEd')+row('📨','إرسال بيانات الدخول','sSn')+row('🔔','تذكير بالدفع','sRm');
+ h+=row('🚪','تسجيل الخروج','sOut');
+ var s=sheet(h);
+ s.querySelector('#sPw').onclick=function(){openChangePw(false)};
+ if(org){s.querySelector('#sEd').onclick=function(){openSetup(true)};s.querySelector('#sSn').onclick=openSend;s.querySelector('#sRm').onclick=openReminders}
+ s.querySelector('#sOut').onclick=function(){if(!confirm('تسجيل الخروج من الجمعية دي؟'))return;var t=tokOf(S.code),c=S.code;if(t)rpc('g_logout',{p_token:t}).catch(function(){});lsDel('gam_tok_'+c);dropList(c);lsDel('gam_last');closeSheet();S.code=null;S.data=null;try{history.replaceState(null,'',location.pathname)}catch(x){}showWelcome()};
+}
+function openSend(){
+ var d=S.data,list=d.members.filter(function(m){return m.id!==S.me});
+ var h='<h2>إرسال بيانات الدخول</h2><p class="s">كل عضو بيدخل باسم الجمعية + رقم موبايله أول مرة. الزر بيفتح واتساب برسالة جاهزة.</p>';
+ list.forEach(function(m){h+='<div class="rrow"><b>'+esc(m.name)+'</b><button class="w" data-w="'+esc(m.id)+'">واتساب</button><button class="c" data-c="'+esc(m.id)+'">نسخ</button></div>'});
+ var s=sheet(h);
+ function mem(id){return d.members.filter(function(m){return m.id===id})[0]}
+ s.querySelectorAll('[data-w]').forEach(function(b){b.onclick=function(){var m=mem(b.dataset.w);window.open(waUrl(m,loginText(m)),'_blank')}});
+ s.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){copyText(loginText(mem(b.dataset.c)),'تم نسخ الرسالة')}});
+}
+function resetPw(id){
+ var m=S.data.members.filter(function(x){return x.id===id})[0];if(!m)return;
+ if(!confirm('إعادة باسورد '+m.name+' لرقم موبايله؟ هيخرج من جلساته ويدخل برقم موبايله.'))return;
+ rpc('g_reset_pw',{p_token:tokOf(S.code),p_member:id}).then(function(r){
+  if(r&&r.error){toast(r.error==='conflict'?'ما ينفعش، رقم موبايله مستخدم كباسورد عند عضو تاني':'مش مسموحلك')}
+  else toast('تم إرجاع باسورد '+m.name+' لرقم موبايله')}).catch(netErr);
+}
 function showWelcome(msg){
  S.code=null;
- $app.innerHTML=(DEMO?'<div class="strip">نسخة تجريبية: البيانات على جهازك بس</div>':'')+'<div class="wel"><div class="logo">🤝</div><h1>الجمعية</h1><p style="margin-bottom:12px">مساحة مشتركة للصحاب لمتابعة الجمعية بسهولة.</p><div class="feat"><i>✅</i><div><b>كل واحد يأكد دفعه</b><span>ويرفع إثبات التحويل بضغطة</span></div></div><div class="feat"><i>👀</i><div><b>الكل يشوف مين دفع ومين هيقبض</b><span>شفافية كاملة بين الأعضاء</span></div></div><div class="feat"><i>🔒</i><div><b>مبيحوّلش فلوس</b><span>التطبيق بيتابع الدفع بس</span></div></div><div style="height:8px"></div>'+(msg?'<div class="err" style="margin-bottom:14px">'+esc(msg)+'</div>':'')+'<button class="btn" id="new">ابدأ جمعية جديدة</button><p style="margin-top:18px;font-size:13px">لو صاحبك بعتلك رابط جمعية، افتحه من هنا.</p></div>';
- document.getElementById('new').onclick=function(){openSetup(false)};
+ $app.innerHTML=(DEMO?'<div class="strip">نسخة تجريبية: البيانات على جهازك بس</div>':'')+'<div style="min-height:86vh;display:flex;flex-direction:column;justify-content:center;padding:0 22px;text-align:center"><div style="margin:0 auto 26px"><div style="width:104px;margin:0 auto">'+logo(104)+'</div><h1 style="margin:14px 0 0;font-size:30px;font-weight:900">جمعيتي</h1></div>'+(msg?'<div class="err" style="margin-bottom:14px">'+esc(msg)+'</div>':'')+'<button class="btn" id="new" style="margin-top:0">إنشاء جمعية جديدة</button><button class="btn alt" id="have" style="background:#fff;color:var(--brand);border:1.5px solid var(--brand)">عندي جمعية</button></div>';
+ document.getElementById('new').onclick=startCreate;document.getElementById('have').onclick=function(){showLogin()};
 }
 
 /* ===== sheets ===== */
@@ -665,8 +824,9 @@ function countdownHtml(){
  }
  return h+'</div>';
 }
+function rLink(){return S.login?appUrl():link()}
 function reminderText(name){
- var d=S.data;return 'السلام عليكم يا '+name+' 🌷\nتذكير ودّي بقسط جمعية "'+d.circle.name+'" عن '+pLabel(S.month)+' ('+fmt(d.circle.amount)+' ج.م).\nلو دفعت ارفع سكرين شوت التحويل من هنا:\n'+link();
+ var d=S.data;return 'السلام عليكم يا '+name+' 🌷\nتذكير ودّي بقسط جمعية "'+d.circle.name+'" عن '+pLabel(S.month)+' ('+fmt(d.circle.amount)+' ج.م).\n'+(S.login?'ادخل وتابع الجمعية من هنا:':'لو دفعت ارفع سكرين شوت التحويل من هنا:')+'\n'+rLink();
 }
 function copyText(t,msg){
  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast(msg)},function(){fallbackCopy(t,msg)})}else fallbackCopy(t,msg)
@@ -679,10 +839,10 @@ function openReminders(){
  un.forEach(function(m){h+='<div class="rrow"><b>'+esc(m.name)+'</b><button class="w" data-w="'+esc(m.id)+'">واتساب</button><button class="c" data-c="'+esc(m.id)+'">نسخ</button></div>'});
  h+='<button class="btn" id="rAll">نسخ رسالة واحدة للجروب</button>';
  var s=sheet(h);
- function nameOf(id){return d.members.filter(function(m){return m.id===id})[0].name}
- s.querySelectorAll('[data-w]').forEach(function(b){b.onclick=function(){window.open('https://wa.me/?text='+encodeURIComponent(reminderText(nameOf(b.dataset.w))),'_blank')}});
- s.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){copyText(reminderText(nameOf(b.dataset.c)),'تم نسخ الرسالة')}});
- s.querySelector('#rAll').onclick=function(){copyText('تذكير بقسط جمعية "'+d.circle.name+'" عن '+pLabel(S.month)+' ('+fmt(d.circle.amount)+' ج.م) لـ: '+un.map(function(m){return m.name}).join('، ')+'\nارفعوا سكرين شوت التحويل من هنا:\n'+link(),'تم نسخ الرسالة')};
+ function mOf(id){return d.members.filter(function(m){return m.id===id})[0]}
+ s.querySelectorAll('[data-w]').forEach(function(b){b.onclick=function(){var mm=mOf(b.dataset.w);window.open(waUrl(mm,reminderText(mm.name)),'_blank')}});
+ s.querySelectorAll('[data-c]').forEach(function(b){b.onclick=function(){copyText(reminderText(mOf(b.dataset.c).name),'تم نسخ الرسالة')}});
+ s.querySelector('#rAll').onclick=function(){copyText('تذكير بقسط جمعية "'+d.circle.name+'" عن '+pLabel(S.month)+' ('+fmt(d.circle.amount)+' ج.م) لـ: '+un.map(function(m){return m.name}).join('، ')+'\n'+(S.login?'ادخلوا وتابعوا الجمعية من هنا:':'ارفعوا سكرين شوت التحويل من هنا:')+'\n'+rLink(),'تم نسخ الرسالة')};
 }
 function openShare(){
  var h='<h2>رابط الجمعية</h2><p class="s">ابعته للصحاب. أي حد معاه الرابط يقدر يشوف الجمعية وإثباتات الدفع، فابعته للأعضاء بس.</p><div class="code">'+esc(link())+'</div>'+
@@ -705,7 +865,7 @@ function openSetup(edit){
  var curP=edit?period():'month';
  var cur=edit?S.data.circle:{name:'',amount:'',start:ymNow()};
  var sp=curP==='month'?cur.start.split('-'):[y,now.getMonth()+1];
- var mem=edit?S.data.members.map(function(m){return {id:m.id,name:m.name}}):[{name:''},{name:''},{name:''}];
+ var mem=edit?S.data.members.map(function(m){return {id:m.id,name:m.name,phone:m.phone,org:m.org}}):[{name:''},{name:''},{name:''}];
  var dk=(curP==='month'?todayKey():String(cur.start)).split('-'),dy=+dk[0]||y,dm=+dk[1]||1,dd=+dk[2]||1;
  function dayOpts(sel){var o='';for(var i=1;i<=31;i++)o+='<option'+(i===sel?' selected':'')+'>'+i+'</option>';return o}
  var h='<div class="shead"><div class="grab"></div><h2>'+(edit?'تعديل الجمعية':'جمعية جديدة')+'</h2><button class="xc" id="xc" type="button" aria-label="إغلاق">✕</button></div><div class="sbody"><p class="s">'+(edit?'تقدر تغيّر الأسماء والترتيب والمبلغ. مسح عضو بيمسح دفعاته.':'اكتب بيانات الجمعية. الترتيب بيحدد مين يقبض في كل دور.')+'</p>'+
@@ -724,11 +884,12 @@ function openSetup(edit){
  s.querySelectorAll('#pp .chip').forEach(function(b){b.onclick=function(){per=b.dataset.p;s.querySelectorAll('#pp .chip').forEach(function(x){x.classList.toggle('on',x===b)});syncP()}});
  syncP();
  function drawM(){
-  ml.innerHTML=mem.map(function(m,i){return '<div class="mrow"><span class="no num">'+(i+1)+'</span><input class="inp" maxlength="30" data-i="'+i+'" placeholder="اسم العضو" value="'+esc(m.name)+'"><button class="sm" data-up="'+i+'" aria-label="أعلى">'+IC.up+'</button><button class="sm" data-dn="'+i+'" aria-label="أسفل">'+IC.down+'</button><button class="sm del" data-rm="'+i+'" aria-label="حذف">'+IC.x+'</button></div>'}).join('');
+  ml.innerHTML=mem.map(function(m,i){return '<div class="mrow"><span class="no num">'+(i+1)+'</span><input class="inp" maxlength="30" data-i="'+i+'" placeholder="اسم العضو" value="'+esc(m.name)+'"><button class="sm" data-up="'+i+'" aria-label="أعلى">'+IC.up+'</button><button class="sm" data-dn="'+i+'" aria-label="أسفل">'+IC.down+'</button><button class="sm del" data-rm="'+i+'" aria-label="حذف">'+IC.x+'</button></div>'+(S.login?'<div class="mrow" style="margin-top:4px"><span class="no"></span><input class="inp" style="direction:ltr;text-align:right;height:40px;font-size:14px" inputmode="tel" data-ph="'+i+'" placeholder="موبايل (01xxxxxxxxx)" '+(m.id?'disabled ':'')+'value="'+esc(m.phone||'')+'"></div>':'')}).join('');
   ml.querySelectorAll('input').forEach(function(inp){inp.oninput=function(){mem[+inp.dataset.i].name=inp.value}});
+  ml.querySelectorAll('[data-ph]').forEach(function(inp){inp.oninput=function(){mem[+inp.dataset.ph].phone=D(inp.value).replace(/\D/g,'')}});
   ml.querySelectorAll('[data-up]').forEach(function(b){b.onclick=function(){var i=+b.dataset.up;if(i>0){var t=mem[i];mem[i]=mem[i-1];mem[i-1]=t;drawM()}}});
   ml.querySelectorAll('[data-dn]').forEach(function(b){b.onclick=function(){var i=+b.dataset.dn;if(i<mem.length-1){var t=mem[i];mem[i]=mem[i+1];mem[i+1]=t;drawM()}}});
-  ml.querySelectorAll('[data-rm]').forEach(function(b){b.onclick=function(){var i=+b.dataset.rm;if(mem.length<=2){showErr('لازم عضوين على الأقل');return}
+  ml.querySelectorAll('[data-rm]').forEach(function(b){b.onclick=function(){var i=+b.dataset.rm;if(mem[i].org){showErr('المنظم لازم يفضل في الجمعية');return}if(mem.length<=2){showErr('لازم عضوين على الأقل');return}
    if(edit&&mem[i].id&&!confirm('مسح '+(mem[i].name||'العضو')+' هيمسح كل دفعاته. متأكد؟'))return;mem.splice(i,1);drawM()}});
  }
  function showErr(t){var e=s.querySelector('#er');e.textContent=t;e.style.display=t?'block':'none'}
@@ -747,11 +908,12 @@ function openSetup(edit){
   if(names.some(function(n){return !n}))return showErr('في عضو من غير اسم. اكتب الاسم أو امسحه');
   var seen={};for(var i=0;i<names.length;i++){var k=names[i].toLowerCase();if(seen[k])return showErr('الاسم "'+names[i]+'" متكرر. فرّق بينهم (مثلاً بحرف من الاسم التاني)');seen[k]=1}
   if(names.length<2)return showErr('لازم عضوين على الأقل');
+  if(S.login){var pp={};for(var q=0;q<mem.length;q++){var ph=mem[q].phone||'';if(!mem[q].id&&!/^01[0-9]{9}$/.test(ph))return showErr('رقم موبايل غلط عند '+names[q]+' (١١ رقم يبدأ بـ 01)');if(ph){if(pp[ph])return showErr('في رقمين متكررين');pp[ph]=1}}}
   var b=s.querySelector('#sv');b.disabled=true;b.textContent='جاري الحفظ...';showErr('');
   var done;
-  if(edit){done=API.update(S.code,S.admin,name,amt,start,per,mem.map(function(m,i){return {id:m.id||null,name:names[i]}})).then(function(d){S.data=d;if(S.me&&!d.members.some(function(m){return m.id===S.me}))S.me=null;var lo=lastMonth();if(S.month<startOf()||S.month>lo)S.month=curMonth();closeSheet();render();toast('تم الحفظ')})}
+  if(edit){done=API.update(S.code,S.admin,name,amt,start,per,mem.map(function(m,i){return {id:m.id||null,name:names[i],phone:m.id?null:(m.phone||null)}})).then(function(d){S.data=d;if(!S.login&&S.me&&!d.members.some(function(m){return m.id===S.me}))S.me=null;var lo=lastMonth();if(S.month<startOf()||S.month>lo)S.month=curMonth();closeSheet();render();toast('تم الحفظ')})}
   else{done=API.create(name,amt,start,names,per).then(function(r){lsSet('gam_admin_'+r.code,r.admin);location.hash='#c='+r.code;boot()})}
-  done.catch(function(e){b.disabled=false;b.textContent=edit?'حفظ التعديلات':'إنشاء الجمعية';showErr(e&&e.message==='denied'?'مش مسموحلك بالتعديل':'مفيش اتصال بالنت، جرّب تاني')});
+  done.catch(function(e){b.disabled=false;b.textContent=edit?'حفظ التعديلات':'إنشاء الجمعية';showErr(errTxt(e))});
  };
 }
 
@@ -829,7 +991,7 @@ function render(){
  var c0=collectorAt(ci),c1=collectorAt(ci+1),c2=collectorAt(ci+2);
  var meM=S.me&&d.members.filter(function(m){return m.id===S.me})[0];
  var h=(DEMO?'<div class="strip">نسخة تجريبية: البيانات على جهازك بس</div>':'');
- h+='<div class="hero" style="padding-bottom:118px"><div class="hrow"><div style="min-width:0"><div style="font-size:13px;opacity:.85">'+(meM?'أهلاً '+esc(meM.name)+' 👋':'مرحباً 👋')+'</div><h1>'+esc(d.circle.name)+'</h1></div><div style="display:flex;gap:8px"><button class="ibtn" id="bShare" aria-label="مشاركة">'+IC.share+'</button>'+(isAdmin()?'<button class="ibtn" id="bSet" aria-label="إعدادات">'+IC.gear+'</button>':'')+'</div></div>'+
+ h+='<div class="hero" style="padding-bottom:118px"><div class="hrow"><div style="min-width:0"><div style="font-size:13px;opacity:.85">'+(meM?'أهلاً '+esc(meM.name)+' 👋':'مرحباً 👋')+(S.login?'<span class="role'+(S.role==='organizer'?' o':'')+'">'+(S.role==='organizer'?'منظم':'عضو')+'</span>':'')+'</div><h1>'+esc(d.circle.name)+'</h1></div><div style="display:flex;gap:8px">'+(S.login?'':'<button class="ibtn" id="bShare" aria-label="مشاركة">'+IC.share+'</button>')+(S.login||isAdmin()?'<button class="ibtn" id="bSet" aria-label="إعدادات">'+IC.gear+'</button>':'')+'</div></div>'+
   '<div class="hsub"><span>'+W().inst+': <b class="num">'+fmt(amt)+'</b> ج.م</span><span>الإجمالي: <b class="num">'+fmt(total)+'</b> ج.م</span><span>الأعضاء: <b class="num">'+n+'</b></span></div></div>';
  h+=switcherHtml(d.circle.name);
  h+='<div class="cards">';
@@ -842,25 +1004,26 @@ function render(){
  var vc=collectorAt(vi);
  h+='<div class="mnav"><button class="arr" id="bPrev" aria-label="'+W().prev+'"'+(vi<=0?' disabled':'')+'>'+IC.right+'</button><button class="mlab" id="bMon">'+esc(pLabel(S.month))+' '+IC.chev+'</button><button class="arr" id="bNext" aria-label="'+W().next+'"'+(vi>=n-1?' disabled':'')+'>'+IC.left+'</button></div>';
  if(vc)h+='<div style="text-align:center;font-size:13px;color:var(--mute);margin-top:6px;font-weight:700">قبض '+(period()==='month'?'الشهر':period()==='week'?'الأسبوع':'الفترة')+' ده: <b style="color:#8A6A12">'+esc(vc.name)+'</b></div>';
- if(paidN<n&&vi<=pToday())h+='<button class="rem" id="bRem">🔔 ذكّر اللي لسه ما دفعش ('+(n-paidN)+')</button>';
+ if(paidN<n&&vi<=pToday()&&(!S.login||isAdmin()))h+='<button class="rem" id="bRem">🔔 ذكّر اللي لسه ما دفعش ('+(n-paidN)+')</button>';
  h+='<div class="chips">'+[['all','الكل'],['paid','اللي دفعوا'],['unpaid','اللي لسه مدفعوش']].map(function(f){return '<button class="chip'+(S.filter===f[0]?' on':'')+'" data-f="'+f[0]+'">'+f[1]+'</button>'}).join('')+'</div>';
  var rows=d.members.filter(function(m){var p=isPaid(m.id,S.month);return S.filter==='all'||(S.filter==='paid'?p:!p)});
  h+='<div class="list">';
  if(!rows.length)h+='<div class="empty"><b>'+(S.filter==='paid'?'⏳':'🎉')+'</b>'+(S.filter==='paid'?'لسه محدش دفع '+(period()==='month'?'في الشهر ده':period()==='week'?'في الأسبوع ده':'في الفترة دي'):'الكل دفع! ما شاء الله')+'</div>';
  rows.forEach(function(m){
   var p=payFor(m.id,S.month),paid=!!(p&&p.paid),has=!!(p&&p.proof),ed=canEdit(m.id),cidx=collectIdxOf(m.id);
-  h+='<div class="row'+(m.id===S.me?' me':'')+'" data-id="'+esc(m.id)+'"><div class="av">'+esc(Array.from(m.name)[0]||'؟')+'</div><div class="rb"><div class="rn">'+esc(m.name)+(m.id===S.me?'<em>أنا</em>':'')+'</div><div class="rs"><span class="badge '+(paid?'p':'u')+'">'+(paid?'دفع ✅':'لم يدفع ⏳')+'</span><span class="coll">يقبض '+esc(pShort(cidx))+'</span></div></div><div class="rr">';
+  h+='<div class="row'+(m.id===S.me?' me':'')+'" data-id="'+esc(m.id)+'"><div class="av">'+esc(Array.from(m.name)[0]||'؟')+'</div><div class="rb"><div class="rn">'+esc(m.name)+(m.id===S.me?'<em>أنا</em>':'')+(m.org?'<em style="background:#FFF3DF;color:#8A6A12">منظم</em>':'')+'</div><div class="rs"><span class="badge '+(paid?'p':'u')+'">'+(paid?'دفع ✅':'لم يدفع ⏳')+'</span><span class="coll">يقبض '+esc(pShort(cidx))+'</span></div></div><div class="rr">';
   if(has)h+='<img class="thumb" data-th="'+esc(m.id)+'" alt="إثبات" role="button">';
   else if(!S.me)h+='<button class="up" data-iam="'+esc(m.id)+'">ده أنا · ارفع سكرين شوت</button>';
   else if(ed&&!paid)h+='<button class="up" data-up="'+esc(m.id)+'">'+IC.clip+'ارفع سكرين شوت</button>';
   else if(ed&&paid)h+='<button class="up" data-up="'+esc(m.id)+'" style="background:#F3F6F4;color:var(--mute)">'+IC.clip+'أضف صورة</button>';
+  if(S.login&&isAdmin()&&m.id!==S.me)h+='<button class="rs-b" data-rs="'+esc(m.id)+'" aria-label="إعادة الباسورد">🔑</button>';
   h+='<button class="cb'+(paid?' on':'')+'" data-cb="'+esc(m.id)+'" aria-label="تأكيد الدفع"'+(ed?'':' disabled')+'>'+(paid?IC.ok:'')+'</button></div></div>';
  });
  h+='</div>';
- if(!S.me)h+='<div class="foot" style="color:#8A6A12;font-weight:800">اختار اسمك الأول، وبعدين تقدر ترفع السكرين شوت بتاعك.</div>';
- if(!S.me)h+='<div class="foot"><button class="up" id="bWho" style="margin:0 auto">اختار اسمك عشان تأكد دفعك</button></div>';
- else h+='<div class="foot"><button id="bWho" style="color:var(--brand);font-weight:800">مش '+esc(meM.name)+'؟ غيّر الاسم</button></div>';
- h+='<div class="foot">التطبيق بيتابع الدفع بس، ومبيحوّلش فلوس.<br>اللي معاه الرابط يقدر يشوف الإثباتات.<br><span style="opacity:.6">الإصدار '+APP_VER+'</span></div>';
+ if(!S.login&&!S.me)h+='<div class="foot" style="color:#8A6A12;font-weight:800">اختار اسمك الأول، وبعدين تقدر ترفع السكرين شوت بتاعك.</div>';
+ if(!S.login&&!S.me)h+='<div class="foot"><button class="up" id="bWho" style="margin:0 auto">اختار اسمك عشان تأكد دفعك</button></div>';
+ else if(!S.login)h+='<div class="foot"><button id="bWho" style="color:var(--brand);font-weight:800">مش '+esc(meM.name)+'؟ غيّر الاسم</button></div>';
+ h+='<div class="foot">التطبيق بيتابع الدفع بس، ومبيحوّلش فلوس.<br>'+(S.login?'':'اللي معاه الرابط يقدر يشوف الإثباتات.<br>')+'<span style="opacity:.6">الإصدار '+APP_VER+'</span></div>';
  var y=window.scrollY;$app.innerHTML=h;window.scrollTo(0,y);
  bind();
  $app.querySelectorAll('[data-th]').forEach(function(img){
@@ -870,11 +1033,12 @@ function render(){
 }
 function bind(){
  var q=function(s){return $app.querySelector(s)};
- q('#bShare').onclick=openShare;
+ var bsh=q('#bShare');if(bsh)bsh.onclick=openShare;
 var br=q('#bRem');if(br)br.onclick=openReminders;
- var bn=q('#bNew');if(bn)bn.onclick=function(){openSetup(false)};
+ var bn=q('#bNew');if(bn)bn.onclick=startCreate;
  $app.querySelectorAll('[data-sw]').forEach(function(b){b.onclick=function(){var c=b.dataset.sw;if(c===S.code)return;location.hash='#c='+c;S.filter='all';boot()}});
- var bs=q('#bSet');if(bs)bs.onclick=function(){openSetup(true)};
+ var bs=q('#bSet');if(bs)bs.onclick=function(){S.login?openSettings():openSetup(true)};
+ $app.querySelectorAll('[data-rs]').forEach(function(b){b.onclick=function(){resetPw(b.dataset.rs)}});
  q('#bPrev').onclick=function(){S.month=pKey(pIdxKey(S.month)-1);render()};
  q('#bNext').onclick=function(){S.month=pKey(pIdxKey(S.month)+1);render()};
  q('#bMon').onclick=openMonthPicker;
@@ -891,7 +1055,7 @@ var br=q('#bRem');if(br)br.onclick=openReminders;
 /* ===== polling ===== */
 function poll(){
  if(!S.code||document.hidden||S.sheet||document.querySelector('.lb2'))return;
- API.state(S.code).then(function(d){if(d&&JSON.stringify(d)!==JSON.stringify(S.data)){S.data=d;if(S.month<startOf()||S.month>lastMonth())S.month=curMonth();render()}}).catch(function(){});
+ API.state(S.code).then(function(d){if(d&&d.error){lsDel('gam_tok_'+S.code);location.reload();return}if(d&&JSON.stringify(d)!==JSON.stringify(S.data)){S.data=d;if(S.month<startOf()||S.month>lastMonth())S.month=curMonth();render()}}).catch(function(){});
 }
 setInterval(poll,7000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)poll()});
