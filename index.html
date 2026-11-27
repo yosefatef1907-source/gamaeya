@@ -363,10 +363,21 @@ button:disabled{opacity:.5;cursor:default}
 .empty b{display:block;font-size:34px;margin-bottom:6px}
 .foot{margin:22px 14px 0;text-align:center;font-size:12px;color:var(--mute);line-height:1.8}
 .strip{background:var(--warnbg);color:#8A5A0A;text-align:center;font-size:12.5px;font-weight:700;padding:6px 10px}
+.swr{display:flex;gap:8px;overflow-x:auto;padding:12px 14px 0;-webkit-overflow-scrolling:touch}
+.swc{flex:none;height:38px;padding:0 14px;border-radius:19px;background:#E8EFEB;color:var(--mute);font-weight:800;font-size:13px;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.swc.on{background:var(--brand);color:#fff}.swc.add{background:#fff;color:var(--brand);border:1.5px dashed var(--brand2)}
 /* sheets */
-.mask{position:fixed;inset:0;background:rgba(10,25,20,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center;animation:f .18s}
+html.slock,html.slock body{overflow:hidden}
+.sheet.sx{display:flex;flex-direction:column;padding:0;overflow:hidden;max-height:90vh;max-height:90dvh}
+.sx .shead{position:relative;flex:none;padding:10px 16px 8px;touch-action:none;border-bottom:1px solid var(--line)}
+.sx .grab{width:42px;height:5px;border-radius:3px;background:#D5DDD9;margin:0 auto 8px}
+.sx .shead h2{margin:0;padding-inline-end:44px}
+.sx .xc{position:absolute;inset-inline-end:12px;top:14px;width:40px;height:40px;border-radius:50%;background:#EEF3F0;font-size:18px;color:var(--ink);display:grid;place-items:center}
+.sx .sbody{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:10px 16px 16px}
+.sx .sfoot{flex:none;padding:8px 16px calc(12px + var(--sab));border-top:1px solid var(--line);background:#fff}
+.mask{overflow:hidden;touch-action:pan-y;position:fixed;inset:0;background:rgba(10,25,20,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center;animation:f .18s}
 @keyframes f{from{opacity:0}}
-.sheet{background:#fff;width:100%;max-width:520px;max-height:92vh;max-height:92dvh;overflow-y:auto;border-radius:26px 26px 0 0;padding:18px 16px calc(20px + var(--sab));animation:u .22s;-webkit-overflow-scrolling:touch}
+.sheet{background:#fff;width:100%;max-width:520px;max-height:92vh;max-height:92dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;border-radius:26px 26px 0 0;padding:18px 16px calc(20px + var(--sab));animation:u .22s;-webkit-overflow-scrolling:touch}
 @keyframes u{from{transform:translateY(40px)}}
 .sheet h2{margin:0 0 4px;font-size:21px;font-weight:900}
 .sheet p.s{margin:0 0 14px;color:var(--mute);font-size:13.5px;line-height:1.7}
@@ -375,6 +386,8 @@ button:disabled{opacity:.5;cursor:default}
 .inp{width:100%;height:48px;border-radius:14px;border:1.5px solid var(--line);background:#F8FAF9;padding:0 14px;font-size:16px;outline:none}
 .inp:focus{border-color:var(--brand2);background:#fff}
 .two{display:flex;gap:8px}
+.mrow .inp{flex:1;min-width:0}
+.two .inp{flex:1;min-width:0;padding:0 8px}
 .mrow{display:flex;gap:6px;align-items:center;margin-top:8px}
 .mrow .no{width:26px;text-align:center;font-weight:800;color:var(--mute);font-size:13px}
 .sm{width:38px;height:44px;border-radius:12px;background:#EEF3F0;display:grid;place-items:center;flex:none;color:var(--ink)}
@@ -562,6 +575,14 @@ function syncHash(){
 function loading(){$app.innerHTML='<div class="spin"></div>'}
 window.addEventListener('hashchange',function(){if(!S.code||parseHash().c!==S.code)location.reload()});
 
+function myList(){try{var l=JSON.parse(lsGet('gam_list')||'[]');return Array.isArray(l)?l:[]}catch(e){return []}}
+function switcherHtml(curName){
+ var l=myList().filter(function(x){return x.code!==S.code});l.push({code:S.code,name:curName});
+ lsSet('gam_list',JSON.stringify(l.filter(function(x,i){return x&&x.code&&l.findIndex(function(y){return y.code===x.code})===i}).slice(-12)));
+ var h='<div class="swr">';
+ l.forEach(function(x){h+='<button class="swc'+(x.code===S.code?' on':'')+'" data-sw="'+esc(x.code)+'">'+esc(x.name)+'</button>'});
+ return h+'<button class="swc add" id="bNew">＋ جمعية جديدة</button></div>';
+}
 function showWelcome(msg){
  S.code=null;
  $app.innerHTML=(DEMO?'<div class="strip">نسخة تجريبية: البيانات على جهازك بس</div>':'')+'<div class="wel"><div class="logo">🤝</div><h1>الجمعية</h1><p>مساحة مشتركة للصحاب: كل واحد يأكد دفعه ويرفع إثبات التحويل، والكل يشوف مين دفع ومين هيقبض.<br><small>التطبيق بيتابع الدفع بس، ومبيحوّلش فلوس.</small></p>'+(msg?'<div class="err" style="margin-bottom:14px">'+esc(msg)+'</div>':'')+'<button class="btn" id="new">ابدأ جمعية جديدة</button><p style="margin-top:18px;font-size:13px">لو صاحبك بعتلك رابط جمعية، افتحه من هنا.</p></div>';
@@ -569,12 +590,12 @@ function showWelcome(msg){
 }
 
 /* ===== sheets ===== */
-function closeSheet(){var m=document.querySelector('.mask');if(m)m.remove();S.sheet=null}
+function closeSheet(){var m=document.querySelector('.mask');if(m)m.remove();S.sheet=null;document.documentElement.classList.remove('slock')}
 function sheet(html,opts){
  closeSheet();var m=document.createElement('div');m.className='mask';
  m.innerHTML='<div class="sheet">'+html+'</div>';
  if(!(opts&&opts.lock))m.addEventListener('click',function(e){if(e.target===m)closeSheet()});
- document.body.appendChild(m);S.sheet=1;return m.firstChild;
+ document.body.appendChild(m);S.sheet=1;document.documentElement.classList.add('slock');return m.firstChild;
 }
 
 function openWho(first){
@@ -620,15 +641,19 @@ function openSetup(edit){
  var cur=edit?S.data.circle:{name:'',amount:'',start:ymNow()};
  var sp=curP==='month'?cur.start.split('-'):[y,now.getMonth()+1];
  var mem=edit?S.data.members.map(function(m){return {id:m.id,name:m.name}}):[{name:''},{name:''},{name:''}];
- var h='<h2>'+(edit?'تعديل الجمعية':'جمعية جديدة')+'</h2><p class="s">'+(edit?'تقدر تغيّر الأسماء والترتيب والمبلغ. مسح عضو بيمسح دفعاته.':'اكتب بيانات الجمعية. الترتيب بيحدد مين يقبض في كل دور.')+'</p>'+
+ var dk=(curP==='month'?todayKey():String(cur.start)).split('-'),dy=+dk[0]||y,dm=+dk[1]||1,dd=+dk[2]||1;
+ function dayOpts(sel){var o='';for(var i=1;i<=31;i++)o+='<option'+(i===sel?' selected':'')+'>'+i+'</option>';return o}
+ var h='<div class="shead"><div class="grab"></div><h2>'+(edit?'تعديل الجمعية':'جمعية جديدة')+'</h2><button class="xc" id="xc" type="button" aria-label="إغلاق">✕</button></div><div class="sbody"><p class="s">'+(edit?'تقدر تغيّر الأسماء والترتيب والمبلغ. مسح عضو بيمسح دفعاته.':'اكتب بيانات الجمعية. الترتيب بيحدد مين يقبض في كل دور.')+'</p>'+
   '<div class="fld"><label>اسم الجمعية</label><input class="inp" id="fn" maxlength="40" placeholder="جمعية الصحاب" value="'+esc(cur.name)+'"></div>'+
   '<div class="fld"><label>الجمعية بتتدفع</label>'+(edit?'<div class="inp" style="display:flex;align-items:center;background:#EEF3F0">'+({month:'كل شهر',week:'كل أسبوع',biweek:'كل أسبوعين'})[curP]+'</div>':'<div class="chips" style="margin:0" id="pp"><button class="chip on" data-p="month">شهرية</button><button class="chip" data-p="week">أسبوعية</button><button class="chip" data-p="biweek">كل أسبوعين</button></div>')+'</div>'+
   '<div class="fld"><label id="la">القسط (ج.م)</label><input class="inp" id="fa" inputmode="numeric" placeholder="1000" value="'+esc(cur.amount)+'"></div>'+
-  '<div class="fld" id="fdate" style="display:none"><label>تاريخ أول دفعة</label><input class="inp" type="date" id="fd" min="2020-01-01" max="2100-12-31" value="'+(curP==='month'?todayKey():esc(cur.start))+'"></div>'+
+  '<div class="fld" id="fdate" style="display:none"><label>تاريخ أول دفعة</label><div class="two" id="fd" style="direction:rtl"><select class="inp" id="fdd" aria-label="اليوم">'+dayOpts(dd)+'</select><select class="inp" id="fdm" aria-label="الشهر">'+MN.map(function(m,i){return '<option value="'+(i+1)+'"'+(dm===i+1?' selected':'')+'>'+m+'</option>'}).join('')+'</select><select class="inp" id="fdy" aria-label="السنة">'+[y-1,y,y+1,y+2].map(function(v){return '<option'+(dy===v?' selected':'')+'>'+v+'</option>'}).join('')+'</select></div></div>'+
   '<div class="fld" id="fmon"><label>شهر البداية</label><div class="two"><select class="inp" id="fm">'+MN.map(function(m,i){return '<option value="'+(i+1)+'"'+(+sp[1]===i+1?' selected':'')+'>'+m+'</option>'}).join('')+'</select><select class="inp" id="fy">'+[y-1,y,y+1,y+2].map(function(v){return '<option'+(+sp[0]===v?' selected':'')+'>'+v+'</option>'}).join('')+'</select></div></div>'+
   '<div class="fld"><label>الأعضاء بترتيب القبض</label><div id="ml"></div><button class="btn alt" id="addm" style="height:44px;margin-top:10px">+ إضافة عضو</button></div>'+
-  '<div class="err" id="er" style="display:none"></div><button class="btn" id="sv">'+(edit?'حفظ التعديلات':'إنشاء الجمعية')+'</button>';
- var s=sheet(h,{lock:!edit&&false});
+  '</div><div class="sfoot"><div class="err" id="er" style="display:none"></div><button class="btn" id="sv" style="margin-top:8px">'+(edit?'حفظ التعديلات':'إنشاء الجمعية')+'</button></div>';
+ var s=sheet(h,{lock:!edit&&false});s.classList.add('sx');
+ s.querySelector('#xc').onclick=closeSheet;
+ (function(){var hd=s.querySelector('.shead'),y0=null,dy=0;hd.addEventListener('touchstart',function(e){y0=e.touches[0].clientY;dy=0;s.style.transition='none'},{passive:true});hd.addEventListener('touchmove',function(e){if(y0===null)return;dy=Math.max(0,e.touches[0].clientY-y0);s.style.transform='translateY('+dy+'px)'},{passive:true});hd.addEventListener('touchend',function(){if(y0===null)return;y0=null;if(dy>90)closeSheet();else{s.style.transition='transform .2s';s.style.transform=''}})})();
  var ml=s.querySelector('#ml');var per=curP;
  function syncP(){s.querySelector('#fdate').style.display=per==='month'?'none':'block';s.querySelector('#fmon').style.display=per==='month'?'block':'none';s.querySelector('#la').textContent=per==='month'?'القسط الشهري (ج.م)':per==='week'?'القسط الأسبوعي (ج.م)':'القسط كل أسبوعين (ج.م)'}
  s.querySelectorAll('#pp .chip').forEach(function(b){b.onclick=function(){per=b.dataset.p;s.querySelectorAll('#pp .chip').forEach(function(x){x.classList.toggle('on',x===b)});syncP()}});
@@ -646,7 +671,8 @@ function openSetup(edit){
  s.querySelector('#addm').onclick=function(){if(mem.length>=40){showErr('الحد الأقصى 40 عضو');return}mem.push({name:''});drawM();var ins=ml.querySelectorAll('input');ins[ins.length-1].focus()};
  s.querySelector('#sv').onclick=function(){
   var name=s.querySelector('#fn').value.trim(),amtS=s.querySelector('#fa').value.replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d)}).replace(/[,\s،]/g,'');
-  var amt=Number(amtS),start=per==='month'?s.querySelector('#fy').value+'-'+String(s.querySelector('#fm').value).padStart(2,'0'):s.querySelector('#fd').value;
+  var amt=Number(amtS),start=per==='month'?s.querySelector('#fy').value+'-'+String(s.querySelector('#fm').value).padStart(2,'0'):s.querySelector('#fdy').value+'-'+String(s.querySelector('#fdm').value).padStart(2,'0')+'-'+String(s.querySelector('#fdd').value).padStart(2,'0');
+  if(per!=='month'){var _p=start.split('-'),_d=new Date(+_p[0],+_p[1]-1,+_p[2]);if(_d.getMonth()!==+_p[1]-1)return showErr('اليوم ده مش موجود في الشهر ده، اختار يوم تاني')}
   if(per!=='month'&&!/^\d{4}-\d{2}-\d{2}$/.test(start))return showErr('اختار تاريخ أول دفعة');
   if(per!=='month'&&(start<'2020-01-01'||start>'2100-12-31'))return showErr('التاريخ ده مش منطقي، اختار تاريخ قريب');
   var names=mem.map(function(m){return m.name.trim()});
@@ -740,6 +766,7 @@ function render(){
  var h=(DEMO?'<div class="strip">نسخة تجريبية: البيانات على جهازك بس</div>':'');
  h+='<div class="hero"><div class="hrow"><div style="min-width:0"><div style="font-size:13px;opacity:.85">'+(meM?'أهلاً '+esc(meM.name)+' 👋':'مرحباً 👋')+'</div><h1>'+esc(d.circle.name)+'</h1></div><div style="display:flex;gap:8px"><button class="ibtn" id="bShare" aria-label="مشاركة">'+IC.share+'</button>'+(isAdmin()?'<button class="ibtn" id="bSet" aria-label="إعدادات">'+IC.gear+'</button>':'')+'</div></div>'+
   '<div class="hsub"><span>'+W().inst+': <b class="num">'+fmt(amt)+'</b> ج.م</span><span>الإجمالي: <b class="num">'+fmt(total)+'</b> ج.م</span><span>الأعضاء: <b class="num">'+n+'</b></span></div></div>';
+ h+=switcherHtml(d.circle.name);
  h+='<div class="cards">';
  h+='<div class="pc cur"><div style="min-width:0"><div class="lb">'+(after?'الجمعية خلصت 🎉':before?'أول قبض (الجمعية لسه مبدأتش)':'🏆 قبض '+W().cur)+'</div><div class="nm">'+esc(c0?c0.name:'')+'</div><div class="mo">'+esc(pLabel(cm))+'</div></div><div class="amt"><span class="num">'+fmt(total)+'</span> ج.م<small>المبلغ الإجمالي</small></div></div>';
  h+='<div class="pc"><div class="lb">قبض '+W().nxt+'</div><div class="nm">'+(c1?esc(c1.name):'—')+'</div><div class="mo">'+(c1?esc(pLabel(pKey(ci+1))):'آخر دور')+'</div></div>';
@@ -777,6 +804,8 @@ function render(){
 function bind(){
  var q=function(s){return $app.querySelector(s)};
  q('#bShare').onclick=openShare;
+ var bn=q('#bNew');if(bn)bn.onclick=function(){openSetup(false)};
+ $app.querySelectorAll('[data-sw]').forEach(function(b){b.onclick=function(){var c=b.dataset.sw;if(c===S.code)return;location.hash='#c='+c;S.filter='all';boot()}});
  var bs=q('#bSet');if(bs)bs.onclick=function(){openSetup(true)};
  q('#bPrev').onclick=function(){S.month=pKey(pIdxKey(S.month)-1);render()};
  q('#bNext').onclick=function(){S.month=pKey(pIdxKey(S.month)+1);render()};
