@@ -541,7 +541,8 @@ var API={
 /* ===== state ===== */
 var S={login:false,role:null,code:null,admin:null,me:null,data:null,month:null,filter:'all',sheet:null,proofCache:{},busy:false};
 function isAdmin(){return S.login?S.role==='organizer':!!S.admin}
-function canEdit(mid){return S.login?S.role==='organizer':(isAdmin()||S.me===mid)}
+function canEdit(mid){return S.login?(S.role==='organizer'||S.me===mid):(isAdmin()||S.me===mid)}
+function cbOk(mid){return S.login?isAdmin():canEdit(mid)}
 function toast(t){var e=document.querySelector('.toast');if(e)e.remove();e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(function(){e.remove()},2600)}
 function netErr(e){toast(e&&e.message==='denied'?'مش مسموحلك بالتعديل ده':'مفيش اتصال بالنت، جرّب تاني')}
 function link(){return location.origin+location.pathname+'#c='+S.code}
@@ -652,7 +653,7 @@ function startCreate(){W3={name:'',amount:'',period:'month',start:todayKey(),mem
 function wz(v){
  var h='',e='<div class="err" id="wer"></div>';
  if(v==='inst'){
-  h='<div class="wc" style="margin-top:calc(18px + var(--sat))"><div style="font-size:34px;text-align:center">👑</div><h2 class="wh">إنت هتبقى المنظم</h2><p class="wp" style="text-align:center">اللي بيعمل الجمعية هو المنظم. ده اللي تقدر تعمله:</p><b style="font-size:14px">صلاحياتك كمنظم</b><div class="wl">✅ تحدد اسم الجمعية والمبلغ والدورة وترتيب الأدوار<br>✅ تضيف الأعضاء بأسمائهم وأرقام موبايلاتهم<br>✅ تسجل مين دفع وتتابع التحصيل<br>✅ تبعت بيانات الدخول لكل عضو على واتساب<br>✅ تبعت تذكيرات الدفع<br>✅ تعيد باسورد أي عضو لرقم موبايله لو نساه</div><b style="font-size:14px">اللي بيشوفه الأعضاء</b><div class="wl">👀 مين دفع ودور مين في القبض<br>⏳ عد تنازلي للدفعة الجاية ولدورهم<br>🔔 تذكيرات واتساب بمواعيد الدفع<br>🔑 يدخلوا باسم الجمعية والباسورد، ويغيروا الباسورد من الإعدادات<br>🔒 الأعضاء بيشوفوا بس، ومش بيعدلوا في الدفعات</div><button class="btn" id="wn">فهمت، كمّل</button><button class="btn ghost" id="wb">رجوع</button></div>';
+  h='<div class="wc" style="margin-top:calc(18px + var(--sat))"><div style="font-size:34px;text-align:center">👑</div><h2 class="wh">إنت هتبقى المنظم</h2><p class="wp" style="text-align:center">اللي بيعمل الجمعية هو المنظم. ده اللي تقدر تعمله:</p><b style="font-size:14px">صلاحياتك كمنظم</b><div class="wl">✅ تحدد اسم الجمعية والمبلغ والدورة وترتيب الأدوار<br>✅ تضيف الأعضاء بأسمائهم وأرقام موبايلاتهم<br>✅ تسجل مين دفع وتتابع التحصيل<br>✅ تبعت بيانات الدخول لكل عضو على واتساب<br>✅ تبعت تذكيرات الدفع<br>✅ تعيد باسورد أي عضو لرقم موبايله لو نساه</div><b style="font-size:14px">اللي بيشوفه الأعضاء</b><div class="wl">👀 مين دفع ودور مين في القبض<br>⏳ عد تنازلي للدفعة الجاية ولدورهم<br>🔔 تذكيرات واتساب بمواعيد الدفع<br>🔑 يدخلوا باسم الجمعية والباسورد، ويغيروا الباسورد من الإعدادات<br>📎 العضو يرفع إثبات دفعته بنفسه بعد ما يدخل، والمنظم هو اللي يتحكم في الباقي</div><button class="btn" id="wn">فهمت، كمّل</button><button class="btn ghost" id="wb">رجوع</button></div>';
   $app.innerHTML=h;document.getElementById('wn').onclick=function(){wz('s1')};document.getElementById('wb').onclick=function(){S.code=null;lsGet('gam_last')?boot():showWelcome()};
  }else if(v==='s1'){
   h=wsteps(1)+'<div class="wc"><h2 class="wh">١. بيانات الجمعية</h2><p class="wp">اختار اسم يميزها (الأعضاء هيدخلوا بيه).</p><div class="fld"><label>اسم الجمعية</label><input class="inp" id="gn" maxlength="40" placeholder="مثلاً: جمعية الشلة" value="'+esc(W3.name)+'"></div><div class="fld"><label>المبلغ لكل عضو (جنيه)</label><input class="inp" id="ga" inputmode="numeric" placeholder="1000" style="direction:ltr;text-align:right" value="'+esc(W3.amount)+'"></div><div class="fld"><label>الدورة</label><div class="seg" id="sg"><button data-p="month" class="'+(W3.period==='month'?'on':'')+'">شهرية</button><button data-p="week" class="'+(W3.period==='week'?'on':'')+'">أسبوعية</button><button data-p="biweek" class="'+(W3.period==='biweek'?'on':'')+'">كل أسبوعين</button></div></div><div class="fld"><label>تاريخ أول دفعة</label><input class="inp" id="gd" type="date" style="direction:ltr;text-align:right" value="'+esc(W3.start)+'"></div>'+e+'<button class="btn" id="wn">التالي</button><button class="btn ghost" id="wb">رجوع</button></div>';
@@ -966,12 +967,12 @@ function openProof(mid,month){
   else e.querySelector('.spin').outerHTML='<img alt="إثبات الدفع" src="'+src+'">';
   var a=document.createElement('div');a.className='acts';
   var ed=canEdit(mid);
-  a.innerHTML=(ed?'<button id="rp">تغيير الصورة</button><button id="dl" class="red">حذف الصورة</button>':'')+'<button id="cl">إغلاق</button>';
+  a.innerHTML=(ed?'<button id="rp">تغيير الصورة</button>'+(cbOk(mid)?'<button id="dl" class="red">حذف الصورة</button>':''):'')+'<button id="cl">إغلاق</button>';
   e.appendChild(a);
   a.querySelector('#cl').onclick=close;
   if(ed){
    a.querySelector('#rp').onclick=function(){close();uploadProof(mid,month)};
-   a.querySelector('#dl').onclick=function(){if(!confirm('حذف صورة الإثبات؟'))return;close();
+   if(a.querySelector('#dl'))a.querySelector('#dl').onclick=function(){if(!confirm('حذف صورة الإثبات؟'))return;close();
     API.set(S.code,mid,month,isPaid(mid,month),null,false).then(function(d){S.data=d;delete S.proofCache[mid+'|'+month];render();toast('تم حذف الصورة')}).catch(netErr)};
   }
  }).catch(function(er){close();netErr(er)});
@@ -1012,12 +1013,12 @@ function render(){
  rows.forEach(function(m){
   var p=payFor(m.id,S.month),paid=!!(p&&p.paid),has=!!(p&&p.proof),ed=canEdit(m.id),cidx=collectIdxOf(m.id);
   h+='<div class="row'+(m.id===S.me?' me':'')+'" data-id="'+esc(m.id)+'"><div class="av">'+esc(Array.from(m.name)[0]||'؟')+'</div><div class="rb"><div class="rn">'+esc(m.name)+(m.id===S.me?'<em>أنا</em>':'')+(m.org?'<em style="background:#FFF3DF;color:#8A6A12">منظم</em>':'')+'</div><div class="rs"><span class="badge '+(paid?'p':'u')+'">'+(paid?'دفع ✅':'لم يدفع ⏳')+'</span><span class="coll">يقبض '+esc(pShort(cidx))+'</span></div></div><div class="rr">';
-  if(has)h+='<img class="thumb" data-th="'+esc(m.id)+'" alt="إثبات" role="button">';
+  if(has&&(!S.login||isAdmin()||m.id===S.me))h+='<img class="thumb" data-th="'+esc(m.id)+'" alt="إثبات" role="button">';
   else if(!S.me)h+='<button class="up" data-iam="'+esc(m.id)+'">ده أنا · ارفع سكرين شوت</button>';
   else if(ed&&!paid)h+='<button class="up" data-up="'+esc(m.id)+'">'+IC.clip+'ارفع سكرين شوت</button>';
   else if(ed&&paid)h+='<button class="up" data-up="'+esc(m.id)+'" style="background:#F3F6F4;color:var(--mute)">'+IC.clip+'أضف صورة</button>';
   if(S.login&&isAdmin()&&m.id!==S.me)h+='<button class="rs-b" data-rs="'+esc(m.id)+'" aria-label="إعادة الباسورد">🔑</button>';
-  h+='<button class="cb'+(paid?' on':'')+'" data-cb="'+esc(m.id)+'" aria-label="تأكيد الدفع"'+(ed?'':' disabled')+'>'+(paid?IC.ok:'')+'</button></div></div>';
+  h+='<button class="cb'+(paid?' on':'')+'" data-cb="'+esc(m.id)+'" aria-label="تأكيد الدفع"'+(cbOk(m.id)?'':' disabled')+'>'+(paid?IC.ok:'')+'</button></div></div>';
  });
  h+='</div>';
  if(!S.login&&!S.me)h+='<div class="foot" style="color:#8A6A12;font-weight:800">اختار اسمك الأول، وبعدين تقدر ترفع السكرين شوت بتاعك.</div>';
