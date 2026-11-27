@@ -550,7 +550,21 @@ function collectIdxOf(mid){return S.data.members.findIndex(function(m){return m.
 
 /* ===== boot ===== */
 function parseHash(){var h=location.hash.replace(/^#/,''),o={};h.split('&').forEach(function(kv){var p=kv.split('=');if(p[0])o[p[0]]=decodeURIComponent(p[1]||'')});return o}
+var APP_VER='v5-2026-11-27';
+function checkUpdate(){
+ try{fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(x){
+  var m=x.match(/var APP_VER='([^']+)'/);
+  if(m&&m[1]!==APP_VER&&!document.getElementById('updbar')){
+   var b=document.createElement('div');b.id='updbar';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99;background:#0B5D4B;color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;text-align:center;font-weight:800;font-size:14px';
+   b.innerHTML='في تحديث جديد للتطبيق <button style="margin-inline-start:10px;background:#fff;color:#0B5D4B;border-radius:10px;padding:5px 12px;font-weight:900">تحديث الآن</button>';
+   b.querySelector('button').onclick=function(){location.replace(location.pathname+'?v='+Date.now()+location.hash)};
+   document.body.appendChild(b);
+  }
+ }).catch(function(){})}catch(e){}
+}
+document.addEventListener('visibilitychange',function(){if(!document.hidden)checkUpdate()});
 function boot(){
+ checkUpdate();
  var h=parseHash(),code=h.c||lsGet('gam_last');
  if(h.c&&h.a)lsSet('gam_admin_'+h.c,h.a);
  if(h.c&&h.m)lsSet('gam_me_'+h.c,h.m);
@@ -874,7 +888,7 @@ function render(){
  if(!S.me)h+='<div class="foot" style="color:#8A6A12;font-weight:800">اختار اسمك الأول، وبعدين تقدر ترفع السكرين شوت بتاعك.</div>';
  if(!S.me)h+='<div class="foot"><button class="up" id="bWho" style="margin:0 auto">اختار اسمك عشان تأكد دفعك</button></div>';
  else h+='<div class="foot"><button id="bWho" style="color:var(--brand);font-weight:800">مش '+esc(meM.name)+'؟ غيّر الاسم</button></div>';
- h+='<div class="foot">التطبيق بيتابع الدفع بس، ومبيحوّلش فلوس.<br>اللي معاه الرابط يقدر يشوف الإثباتات.</div>';
+ h+='<div class="foot">التطبيق بيتابع الدفع بس، ومبيحوّلش فلوس.<br>اللي معاه الرابط يقدر يشوف الإثباتات.<br><span style="opacity:.6">الإصدار '+APP_VER+'</span></div>';
  var y=window.scrollY;$app.innerHTML=h;window.scrollTo(0,y);
  bind();
  $app.querySelectorAll('[data-th]').forEach(function(img){
