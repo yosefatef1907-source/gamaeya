@@ -341,7 +341,7 @@ button:disabled{opacity:.5;cursor:default}
 .chip.on{background:var(--brand);color:#fff}
 .list{margin:12px 14px 0;display:flex;flex-direction:column;gap:9px}
 .row{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:12px;display:flex;align-items:center;gap:11px}
-.row.me{outline:2px solid #BFE5DA}
+.row.me{outline:2px solid #BFE5DA}.row.org{border-inline-start:5px solid #F4C25B}.row.org .av{position:relative;overflow:visible}.row.org .av::after{content:'👑';position:absolute;top:-11px;right:-5px;font-size:15px;transform:rotate(15deg)}
 .av{width:42px;height:42px;border-radius:50%;background:var(--okbg);color:var(--brand);display:grid;place-items:center;font-weight:900;font-size:18px;flex:none}
 .rb{flex:1;min-width:0}
 .rn{font-weight:800;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -493,7 +493,7 @@ function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
 
 /* ===== backends ===== */
-var DEMO=!GAM_CFG.url;
+var DEMO=!GAM_CFG.url||/^YOUR_/.test(GAM_CFG.url);
 function rpc(fn,args){
  return fetch(GAM_CFG.url+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':GAM_CFG.key,'Authorization':'Bearer '+GAM_CFG.key,'Content-Type':'application/json'},body:JSON.stringify(args)})
  .then(function(r){return r.text().then(function(t){var j=null;try{j=t?JSON.parse(t):null}catch(e){}if(!r.ok)throw new Error((j&&j.message)||('http '+r.status));return j})});
@@ -544,7 +544,7 @@ function isAdmin(){return S.login?S.role==='organizer':!!S.admin}
 function canEdit(mid){return S.login?(S.role==='organizer'||S.me===mid):(isAdmin()||S.me===mid)}
 function cbOk(mid){return S.login?isAdmin():canEdit(mid)}
 function toast(t){var e=document.querySelector('.toast');if(e)e.remove();e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(function(){e.remove()},2600)}
-function netErr(e){toast(e&&e.message==='denied'?'مش مسموحلك بالتعديل ده':'مفيش اتصال بالنت، جرّب تاني')}
+function netErr(e){toast(e&&e.message==='denied'?'مينفعش تعدّل ده':'مفيش اتصال بالنت، جرّب تاني')}
 function link(){return location.origin+location.pathname+'#c='+S.code}
 function adminLink(){return link()+'&a='+S.admin}
 function startOf(){return S.data.circle.start}
@@ -567,7 +567,7 @@ function collectIdxOf(mid){return S.data.members.findIndex(function(m){return m.
 
 /* ===== boot ===== */
 function parseHash(){var h=location.hash.replace(/^#/,''),o={};h.split('&').forEach(function(kv){var p=kv.split('=');if(p[0])o[p[0]]=decodeURIComponent(p[1]||'')});return o}
-var APP_VER='v7-2026-11-27';
+var APP_VER='v8-2026-11-28';
 function checkUpdate(){
  try{fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(x){
   var m=x.match(/var APP_VER='([^']+)'/);
@@ -695,6 +695,7 @@ function wz(v){
   document.getElementById('wn').onclick=function(){
    var b=this,er=document.getElementById('wer');b.disabled=true;b.textContent='جاري الإنشاء...';er.textContent='';
    var start=W3.period==='month'?W3.start.slice(0,7):W3.start;
+   if(DEMO){API.create(W3.name,W3.amount,start,W3.members.map(function(m){return m.n}),W3.period).then(function(r){lsSet('gam_admin_'+r.code,r.admin);location.hash='#c='+r.code;S.justCreated=true;boot()}).catch(function(x){b.disabled=false;b.textContent='إنشاء الجمعية 🎉';er.textContent=errTxt(x)});return}
    rpc('g_create2',{p_name:W3.name,p_amount:W3.amount,p_start:start,p_period:W3.period,p_members:W3.members.map(function(m){return {name:m.n,phone:m.p}})}).then(function(r){
     lsSet('gam_tok_'+r.code,r.token);listAdd(r.code,W3.name);lsSet('gam_last',r.code);
     try{history.replaceState(null,'',location.pathname+'#c='+r.code)}catch(x){}
@@ -706,7 +707,7 @@ function wz(v){
 function wsteps(n){return '<div class="steps">'+[1,2,3].map(function(i){return '<i class="'+(i<=n?'on':'')+'"></i>'}).join('')+'</div>'}
 function showLogin(msg){
  S.code=null;
- $app.innerHTML='<div class="wel" style="padding-top:calc(40px + var(--sat))"><div style="margin:0 auto 14px;width:72px">'+logo(72)+'</div><h1>تسجيل الدخول</h1><div class="wc" style="margin:18px 0 0;text-align:right"><div class="fld" style="margin-top:0"><label>اسم الجمعية</label><input class="inp" id="lg" placeholder="اسم الجمعية" autocomplete="off"></div><div class="fld"><label>الباسورد</label><input class="inp" id="lp" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="أول مرة: رقم موبايلك" style="direction:ltr;text-align:right"></div><div class="err" id="wer">'+esc(msg||'')+'</div><button class="btn" id="go">دخول</button><button class="btn ghost" id="wb">رجوع</button></div></div>';
+ $app.innerHTML='<div class="wel" style="padding-top:calc(40px + var(--sat))"><div style="margin:0 auto 14px;width:72px">'+logo(72)+'</div><h1>تسجيل الدخول</h1><p class="s" style="text-align:center;margin:8px 20px 0">لازم المنظم يكون ضافك الأول، وهو اللي بيبعتلك اسم الجمعية والباسورد.</p><div class="wc" style="margin:18px 0 0;text-align:right"><div class="fld" style="margin-top:0"><label>اسم الجمعية</label><input class="inp" id="lg" placeholder="اسم الجمعية" autocomplete="off"></div><div class="fld"><label>الباسورد</label><input class="inp" id="lp" type="password" inputmode="numeric" pattern="[0-9]*" placeholder="أول مرة: رقم موبايلك" style="direction:ltr;text-align:right"></div><div class="err" id="wer">'+esc(msg||'')+'</div><button class="btn" id="go">دخول</button><button class="btn ghost" id="wb">رجوع</button></div></div>';
  var lp=document.getElementById('lp');lp.oninput=function(){lp.value=D(lp.value).replace(/\D/g,'')};
  document.getElementById('wb').onclick=function(){showWelcome()};
  function go(){
@@ -766,12 +767,12 @@ function resetPw(id){
  var m=S.data.members.filter(function(x){return x.id===id})[0];if(!m)return;
  if(!confirm('إعادة باسورد '+m.name+' لرقم موبايله؟ هيخرج من جلساته ويدخل برقم موبايله.'))return;
  rpc('g_reset_pw',{p_token:tokOf(S.code),p_member:id}).then(function(r){
-  if(r&&r.error){toast(r.error==='conflict'?'ما ينفعش، رقم موبايله مستخدم كباسورد عند عضو تاني':'مش مسموحلك')}
+  if(r&&r.error){toast(r.error==='conflict'?'مينفعش، رقم موبايله مستخدم كباسورد عند عضو تاني':'مينفعش')}
   else toast('تم إرجاع باسورد '+m.name+' لرقم موبايله')}).catch(netErr);
 }
 function showWelcome(msg){
  S.code=null;
- $app.innerHTML=(DEMO?'<div class="strip">نسخة تجريبية: البيانات على جهازك بس</div>':'')+'<div style="min-height:86vh;display:flex;flex-direction:column;justify-content:center;padding:0 22px;text-align:center"><div style="margin:0 auto 26px"><div style="width:104px;margin:0 auto">'+logo(104)+'</div><h1 style="margin:14px 0 0;font-size:30px;font-weight:900">جمعيتي</h1></div>'+(msg?'<div class="err" style="margin-bottom:14px">'+esc(msg)+'</div>':'')+'<button class="btn" id="new" style="margin-top:0">إنشاء جمعية جديدة</button><button class="btn alt" id="have" style="background:#fff;color:var(--brand);border:1.5px solid var(--brand)">عندي جمعية</button></div>';
+ $app.innerHTML=(DEMO?'<div class="strip">نسخة تجريبية: البيانات على جهازك بس</div>':'')+'<div style="min-height:86vh;display:flex;flex-direction:column;justify-content:center;padding:0 22px;text-align:center"><div style="margin:0 auto 26px"><div style="width:104px;margin:0 auto">'+logo(104)+'</div><h1 style="margin:14px 0 0;font-size:30px;font-weight:900">جمعيتي</h1></div>'+(msg?'<div class="err" style="margin-bottom:14px">'+esc(msg)+'</div>':'')+'<button class="btn" id="new" style="margin-top:0">إنشاء جمعية جديدة</button><button class="btn alt" id="have" style="background:#fff;color:var(--brand);border:1.5px solid var(--brand)">عندي جمعية</button><p class="s" style="margin-top:12px">لو المنظم ضافك وبعتلك اسم الجمعية والباسورد.</p></div>';
  document.getElementById('new').onclick=startCreate;document.getElementById('have').onclick=function(){showLogin()};
 }
 
@@ -852,8 +853,8 @@ function openShare(){
  h+='<p class="s" style="margin-top:16px">تثبيت على الآيفون: افتح الرابط في Safari، دوس زر المشاركة، ثم "إضافة إلى الشاشة الرئيسية".</p>';
  var s=sheet(h);
  function copy(t,msg){
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast(msg)},function(){toast('انسخه يدوي من المربع')})}
-  else{var r=document.createRange();r.selectNodeContents(s.querySelector('.code'));var se=getSelection();se.removeAllRanges();se.addRange(r);toast('انسخه يدوي من المربع')}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast(msg)},function(){toast('انسخه بإيدك من المربع')})}
+  else{var r=document.createRange();r.selectNodeContents(s.querySelector('.code'));var se=getSelection();se.removeAllRanges();se.addRange(r);toast('انسخه بإيدك من المربع')}
  }
  s.querySelector('#cp').onclick=function(){copy(link(),'تم نسخ الرابط')};
  s.querySelector('#wa').onclick=function(){var t='انضم لجمعية "'+S.data.circle.name+'" من هنا: '+link();window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank')};
@@ -993,7 +994,7 @@ function render(){
  var meM=S.me&&d.members.filter(function(m){return m.id===S.me})[0];
  var h=(DEMO?'<div class="strip">نسخة تجريبية: البيانات على جهازك بس</div>':'');
  h+='<div class="hero" style="padding-bottom:118px"><div class="hrow"><div style="min-width:0"><div style="font-size:13px;opacity:.85">'+(meM?'أهلاً '+esc(meM.name)+' 👋':'مرحباً 👋')+(S.login?'<span class="role'+(S.role==='organizer'?' o':'')+'">'+(S.role==='organizer'?'منظم':'عضو')+'</span>':'')+'</div><h1>'+esc(d.circle.name)+'</h1></div><div style="display:flex;gap:8px">'+(S.login?'':'<button class="ibtn" id="bShare" aria-label="مشاركة">'+IC.share+'</button>')+(S.login||isAdmin()?'<button class="ibtn" id="bSet" aria-label="إعدادات">'+IC.gear+'</button>':'')+'</div></div>'+
-  '<div class="hsub"><span>'+W().inst+': <b class="num">'+fmt(amt)+'</b> ج.م</span><span>الإجمالي: <b class="num">'+fmt(total)+'</b> ج.م</span><span>الأعضاء: <b class="num">'+n+'</b></span></div></div>';
+  '<div class="hsub"><span>'+W().inst+': <b class="num">'+fmt(amt)+'</b> ج.م</span><span>الإجمالي: <b class="num">'+fmt(total)+'</b> ج.م</span><span>الأعضاء: <b class="num">'+n+'</b></span>'+(function(){if(!isAdmin())return '';var c=d.payments.filter(function(p){return p.month===S.month&&p.proof}).length;return c?'<span>إثباتات الشهر ده: <b class="num">'+c+'</b> 📎</span>':''})()+'</div></div>';
  h+=switcherHtml(d.circle.name);
  h+='<div class="cards">';
  h+='<div class="pc cur"><div style="min-width:0"><div class="lb">'+(after?'الجمعية خلصت 🎉':before?'أول قبض (الجمعية لسه مبدأتش)':'🏆 قبض '+W().cur)+'</div><div class="nm">'+esc(c0?c0.name:'')+'</div><div class="mo">'+esc(pLabel(cm))+'</div></div><div class="amt"><span class="num">'+fmt(total)+'</span> ج.م<small>المبلغ الإجمالي</small></div></div>';
@@ -1012,7 +1013,7 @@ function render(){
  if(!rows.length)h+='<div class="empty"><b>'+(S.filter==='paid'?'⏳':'🎉')+'</b>'+(S.filter==='paid'?'لسه محدش دفع '+(period()==='month'?'في الشهر ده':period()==='week'?'في الأسبوع ده':'في الفترة دي'):'الكل دفع! ما شاء الله')+'</div>';
  rows.forEach(function(m){
   var p=payFor(m.id,S.month),paid=!!(p&&p.paid),has=!!(p&&p.proof),ed=canEdit(m.id),cidx=collectIdxOf(m.id);
-  h+='<div class="row'+(m.id===S.me?' me':'')+'" data-id="'+esc(m.id)+'"><div class="av">'+esc(Array.from(m.name)[0]||'؟')+'</div><div class="rb"><div class="rn">'+esc(m.name)+(m.id===S.me?'<em>أنا</em>':'')+(m.org?'<em style="background:#FFF3DF;color:#8A6A12">منظم</em>':'')+'</div><div class="rs"><span class="badge '+(paid?'p':'u')+'">'+(paid?'دفع ✅':'لم يدفع ⏳')+'</span><span class="coll">يقبض '+esc(pShort(cidx))+'</span></div></div><div class="rr">';
+  h+='<div class="row'+(m.id===S.me?' me':'')+(m.org?' org':'')+'" data-id="'+esc(m.id)+'"><div class="av">'+esc(Array.from(m.name)[0]||'؟')+'</div><div class="rb"><div class="rn">'+esc(m.name)+(m.id===S.me?'<em>أنا</em>':'')+(m.org?'<em style="background:#F4C25B;color:#3d2c00">منظم</em>':'')+'</div><div class="rs"><span class="badge '+(paid?'p':'u')+'">'+(paid?'دفع ✅':'لم يدفع ⏳')+'</span><span class="coll">يقبض '+esc(pShort(cidx))+'</span></div></div><div class="rr">';
   if(has&&(!S.login||isAdmin()||m.id===S.me))h+='<img class="thumb" data-th="'+esc(m.id)+'" alt="إثبات" role="button">';
   else if(!S.me)h+='<button class="up" data-iam="'+esc(m.id)+'">ده أنا · ارفع سكرين شوت</button>';
   else if(ed&&!paid)h+='<button class="up" data-up="'+esc(m.id)+'">'+IC.clip+'ارفع سكرين شوت</button>';
