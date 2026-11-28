@@ -448,6 +448,16 @@ html.slock,html.slock body{overflow:hidden}
 .btn.ghost{background:none;color:var(--mute);font-weight:700;height:44px;margin-top:4px;font-size:15px}
 .xx{flex:0 0 28px;background:none;color:var(--bad);font-size:24px;font-weight:700}
 .role{font-size:11px;font-weight:800;padding:2px 10px;border-radius:99px;background:rgba(255,255,255,.22);color:#fff;margin-inline-start:6px;vertical-align:middle}.role.o{background:#F4C25B;color:#3d2c00}
+.acc{border-bottom:1px solid var(--line)}
+.ach{display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 2px;font-weight:700;font-size:15px;background:none;border:0;color:inherit;font-family:inherit;text-align:right;cursor:pointer;-webkit-tap-highlight-color:rgba(11,93,75,.08)}
+.chev{font-style:normal;color:var(--mute);font-size:16px;transition:transform .32s ease}
+.acc.open .chev{transform:rotate(180deg)}
+.acb{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s ease}
+.acc.open .acb{grid-template-rows:1fr}
+.acin{overflow:hidden;min-height:0;opacity:0;transition:opacity .28s ease}
+.acc.open .acin{opacity:1}
+.acin>h2,.acin .shead{display:none}
+.acin>p.s{margin-top:0}
 .srow{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);font-weight:700;font-size:15px}
 .srow .tg{height:34px;padding:0 14px;border-radius:99px;background:#fff;border:1px solid var(--line);font-weight:800;font-size:13px}
 .rs-b{width:34px;height:38px;border-radius:11px;background:#EEF3F0;font-size:15px;flex:none}
@@ -567,7 +577,7 @@ function collectIdxOf(mid){return S.data.members.findIndex(function(m){return m.
 
 /* ===== boot ===== */
 function parseHash(){var h=location.hash.replace(/^#/,''),o={};h.split('&').forEach(function(kv){var p=kv.split('=');if(p[0])o[p[0]]=decodeURIComponent(p[1]||'')});return o}
-var APP_VER='v8-2026-11-28';
+var APP_VER='v9-2026-11-28';
 function checkUpdate(){
  try{fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(x){
   var m=x.match(/var APP_VER='([^']+)'/);
@@ -745,14 +755,17 @@ function openChangePw(first){
 function meName(){var m=S.data&&S.data.members.filter(function(x){return x.id===S.me})[0];return m?m.name:''}
 function openSettings(){
  var org=isAdmin(),h='<h2>الإعدادات</h2><p class="s">'+(org?'أنت المنظم لجمعية "'+esc(S.data.circle.name)+'".':'جمعية "'+esc(S.data.circle.name)+'".')+'</p>';
- function row(ic,t,id){return '<div class="srow"><span>'+ic+' '+t+'</span><button class="tg" id="'+id+'">فتح</button></div>'}
- h+=row('🔑','تغيير الباسورد','sPw');
- if(org)h+=row('✏️','تعديل الجمعية والأعضاء','sEd')+row('📨','إرسال بيانات الدخول','sSn')+row('🔔','تذكير بالدفع','sRm');
- h+=row('🚪','تسجيل الخروج','sOut');
+ function item(ic,t,k){return '<div class="acc" data-k="'+k+'"><button class="ach" type="button"><span>'+ic+' '+t+'</span><i class="chev">▾</i></button><div class="acb"><div class="acin"></div></div></div>'}
+ h+=item('🔑','تغيير الباسورد','pw');
+ if(org)h+=item('✏️','تعديل الجمعية والأعضاء','ed')+item('📨','إرسال بيانات الدخول','sn')+item('🔔','تذكير بالدفع','rm');
+ h+='<div class="acc"><button class="ach" type="button" id="sOut"><span>🚪 تسجيل الخروج</span></button></div>';
  var s=sheet(h);
- s.querySelector('#sPw').onclick=function(){openChangePw(false)};
- if(org){s.querySelector('#sEd').onclick=function(){openSetup(true)};s.querySelector('#sSn').onclick=openSend;s.querySelector('#sRm').onclick=openReminders}
- s.querySelector('#sOut').onclick=function(){if(!confirm('تسجيل الخروج من الجمعية دي؟'))return;var t=tokOf(S.code),c=S.code;if(t)rpc('g_logout',{p_token:t}).catch(function(){});lsDel('gam_tok_'+c);dropList(c);lsDel('gam_last');closeSheet();S.code=null;S.data=null;try{history.replaceState(null,'',location.pathname)}catch(x){}showWelcome()};
+ var OP={pw:function(){openChangePw(false)},ed:function(){openSetup(true)},sn:openSend,rm:openReminders};
+ s.querySelectorAll('.acc[data-k]').forEach(function(a){a.querySelector('.ach').onclick=function(){
+  if(a.classList.contains('open')){collapseAcc();return}
+  collapseAcc();PANEL=a.querySelector('.acin');a.classList.add('open');OP[a.dataset.k]();
+  setTimeout(function(){a.scrollIntoView({behavior:'smooth',block:'nearest'})},150)}});
+ s.querySelector('#sOut').onclick=function(){if(!confirm('تسجيل الخروج من الجمعية دي؟'))return;var t=tokOf(S.code),c=S.code;if(t)rpc('g_logout',{p_token:t}).catch(function(){});lsDel('gam_tok_'+c);dropList(c);lsDel('gam_last');closeAll();S.code=null;S.data=null;try{history.replaceState(null,'',location.pathname)}catch(x){}showWelcome()};
 }
 function openSend(){
  var d=S.data,list=d.members.filter(function(m){return m.id!==S.me});
@@ -777,9 +790,13 @@ function showWelcome(msg){
 }
 
 /* ===== sheets ===== */
-function closeSheet(){var m=document.querySelector('.mask');if(m)m.remove();S.sheet=null;document.documentElement.classList.remove('slock')}
+var PANEL=null;
+function closeAll(){PANEL=null;var m=document.querySelector('.mask');if(m)m.remove();S.sheet=null;document.documentElement.classList.remove('slock')}
+function collapseAcc(){var a=document.querySelector('.acc.open');PANEL=null;if(!a)return;a.classList.remove('open');var n=a.querySelector('.acin');setTimeout(function(){if(!a.classList.contains('open'))n.innerHTML=''},340)}
+function closeSheet(){if(PANEL&&PANEL.isConnected){collapseAcc();return}closeAll()}
 function sheet(html,opts){
- closeSheet();var m=document.createElement('div');m.className='mask';
+ if(PANEL&&PANEL.isConnected){PANEL.innerHTML=html;return PANEL}
+ closeAll();var m=document.createElement('div');m.className='mask';
  m.innerHTML='<div class="sheet">'+html+'</div>';
  if(!(opts&&opts.lock))m.addEventListener('click',function(e){if(e.target===m)closeSheet()});
  document.body.appendChild(m);S.sheet=1;document.documentElement.classList.add('slock');return m.firstChild;
@@ -878,9 +895,9 @@ function openSetup(edit){
   '<div class="fld" id="fmon"><label>شهر البداية</label><div class="two"><select class="inp" id="fm">'+MN.map(function(m,i){return '<option value="'+(i+1)+'"'+(+sp[1]===i+1?' selected':'')+'>'+m+'</option>'}).join('')+'</select><select class="inp" id="fy">'+[y-1,y,y+1,y+2].map(function(v){return '<option'+(+sp[0]===v?' selected':'')+'>'+v+'</option>'}).join('')+'</select></div></div>'+
   '<div class="fld"><label>الأعضاء بترتيب القبض</label><div id="ml"></div><button class="btn alt" id="addm" style="height:44px;margin-top:10px">+ إضافة عضو</button></div>'+
   '</div><div class="sfoot"><div class="err" id="er" style="display:none"></div><button class="btn" id="sv" style="margin-top:8px">'+(edit?'حفظ التعديلات':'إنشاء الجمعية')+'</button></div>';
- var s=sheet(h,{lock:!edit&&false});s.classList.add('sx');
+ var s=sheet(h,{lock:!edit&&false});if(s!==PANEL)s.classList.add('sx');
  s.querySelector('#xc').onclick=closeSheet;
- (function(){var hd=s.querySelector('.shead'),y0=null,dy=0;hd.addEventListener('touchstart',function(e){y0=e.touches[0].clientY;dy=0;s.style.transition='none'},{passive:true});hd.addEventListener('touchmove',function(e){if(y0===null)return;dy=Math.max(0,e.touches[0].clientY-y0);s.style.transform='translateY('+dy+'px)'},{passive:true});hd.addEventListener('touchend',function(){if(y0===null)return;y0=null;if(dy>90)closeSheet();else{s.style.transition='transform .2s';s.style.transform=''}})})();
+ if(s!==PANEL)(function(){var hd=s.querySelector('.shead'),y0=null,dy=0;hd.addEventListener('touchstart',function(e){y0=e.touches[0].clientY;dy=0;s.style.transition='none'},{passive:true});hd.addEventListener('touchmove',function(e){if(y0===null)return;dy=Math.max(0,e.touches[0].clientY-y0);s.style.transform='translateY('+dy+'px)'},{passive:true});hd.addEventListener('touchend',function(){if(y0===null)return;y0=null;if(dy>90)closeSheet();else{s.style.transition='transform .2s';s.style.transform=''}})})();
  var ml=s.querySelector('#ml');var per=curP;
  function syncP(){s.querySelector('#fdate').style.display=per==='month'?'none':'block';s.querySelector('#fmon').style.display=per==='month'?'block':'none';s.querySelector('#la').textContent=per==='month'?'القسط الشهري (ج.م)':per==='week'?'القسط الأسبوعي (ج.م)':'القسط كل أسبوعين (ج.م)'}
  s.querySelectorAll('#pp .chip').forEach(function(b){b.onclick=function(){per=b.dataset.p;s.querySelectorAll('#pp .chip').forEach(function(x){x.classList.toggle('on',x===b)});syncP()}});
